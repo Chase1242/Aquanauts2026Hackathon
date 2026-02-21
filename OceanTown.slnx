@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="oceantown.client/oceantown.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="OceanTown.Server/OceanTown.Server.csproj" />
+</Solution>
