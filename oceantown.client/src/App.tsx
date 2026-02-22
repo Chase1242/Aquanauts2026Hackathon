@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
 import ISLAND_IMAGE from './assets/ocean.jpg';
 
 
 export default function App() {
+    const [showAlert, setShowAlert] = useState(true);
+
+    const handleDismiss = () => {
+        setShowAlert(false);
+    };
+
     return (
         <div className="relative flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background-light">
             {/* Simulation Map Area */}
@@ -46,7 +52,7 @@ export default function App() {
                         <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Day 1</span>
                         <div className="flex items-center gap-2 text-slate-800 font-semibold">
                             <Calendar className="w-4 h-4 text-primary" />
-                            Saturday
+                            Monday
                         </div>
                     </motion.div>
 
@@ -55,7 +61,7 @@ export default function App() {
                         <div className="w-4 h-4 rounded-full bg-white/40 border border-white animate-ping absolute inset-0" />
                         <div className="w-4 h-4 rounded-full bg-white relative shadow-[0_0_15px_rgba(255,255,255,0.8)] group-hover/marker:scale-125 transition-transform border-2 border-primary" />
                         <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap bg-white text-slate-700 font-semibold text-xs px-3 py-1.5 rounded-lg shadow-lg">
-                            Sector 4: Overgrowth
+                            I think this island is awesome!
                         </div>
                     </div>
                 </div>
@@ -119,8 +125,11 @@ export default function App() {
             <div className="absolute bottom-6 left-0 right-0 md:left-8 md:right-[340px] px-4 md:px-0 z-30 flex justify-center pointer-events-none">
                 <motion.div
                     initial={{ y: 50, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.8 }}
+                    animate={{
+                        y: showAlert ? 0 : 200,
+                        opacity: showAlert ? 1 : 0
+                    }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 120, delay: showAlert ? 0.8 : 0 }}
                     className="w-full max-w-2xl glass-panel rounded-xl shadow-xl overflow-hidden border border-white pointer-events-auto bg-white/90"
                 >
                     <div className="flex flex-col md:flex-row items-stretch">
@@ -136,40 +145,32 @@ export default function App() {
 
                         {/* Content Area */}
                         <div className="flex-1 p-5 flex flex-col gap-4">
-                            <div className="flex items-start gap-3">
-                                <div className="md:hidden flex-shrink-0 mt-1">
-                                    <Bot className="w-5 h-5 text-primary" />
-                                </div>
-                                <div>
-                                    <h4 className="text-slate-800 text-base font-bold mb-1">Decision Required: Sector 4 Overgrowth</h4>
-                                    <p className="text-slate-500 text-sm leading-relaxed">
-                                        Detecting rapid flora expansion in Sector 4. This increases CO2 absorption but risks encroaching on residential zones. Should we introduce controlled grazing to balance the ecosystem?
-                                    </p>
-                                </div>
+                            <div>
+                                <h4 className="text-slate-800 text-base font-bold mb-1">Decision Required: Sector 4 Overgrowth</h4>
+                                <p className="text-slate-500 text-sm leading-relaxed">
+                                    Detecting rapid flora expansion...
+                                </p>
                             </div>
 
                             {/* Action Buttons */}
                             <div className="flex gap-3 mt-1">
-                                <button className="flex-1 bg-primary hover:bg-primary-dark text-white h-11 rounded-lg font-bold text-sm tracking-wide transition-all active:scale-[0.98] shadow-md hover:shadow-lg flex items-center justify-center gap-2 group border border-transparent">
+                                {/* 4. Add onClick to both buttons */}
+                                <button
+                                    onClick={handleDismiss}
+                                    className="flex-1 bg-primary hover:bg-primary-dark text-white h-11 rounded-lg font-bold text-sm tracking-wide transition-all active:scale-[0.98] shadow-md hover:shadow-lg flex items-center justify-center gap-2 group border border-transparent"
+                                >
                                     <CheckCircle2 className="w-4 h-4" />
                                     APPROVE GRAZING
                                 </button>
-                                <button className="flex-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-600 h-11 rounded-lg font-bold text-sm tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+                                <button
+                                    onClick={handleDismiss}
+                                    className="flex-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-600 h-11 rounded-lg font-bold text-sm tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                                >
                                     <XCircle className="w-4 h-4" />
                                     IGNORE ALERT
                                 </button>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Progress Bar at Bottom of Panel */}
-                    <div className="h-1 w-full bg-slate-100">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '80%' }}
-                            transition={{ duration: 10, ease: 'linear' }}
-                            className="h-full bg-primary/60"
-                        />
                     </div>
                 </motion.div>
             </div>
