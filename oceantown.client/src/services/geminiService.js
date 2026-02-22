@@ -1,5 +1,6 @@
 export async function getCitizenDialogue(state, scenarioTitle, choice) {
     try {
+        console.log("here");
         const response = await fetch("/api/gemini", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -11,6 +12,8 @@ export async function getCitizenDialogue(state, scenarioTitle, choice) {
                 choice
             })
         });
+
+        console.log("2");
 
         if (!response.ok) {
             throw new Error("Gemini request failed");

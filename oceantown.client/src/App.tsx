@@ -1,5 +1,5 @@
 import TitleScreen from "./TitleScreen";
-import { getSimulationForUser } from './oceanTownApi';
+import { getSimulationForUser, stepSimulation } from './oceanTownApi';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function App() {
     // Handles Dialog Appearing
     const [showButtons, setShowButtons] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
-    const [dialogueData, setDialogueData] = useState<DialogueData | null>(null);
+    const [dialogue, setDialogueData] = useState<DialogueData | null>(null);
     const [isAnimationComplete, setIsAnimationComplete] = useState(false);
 
     // Monthly Progression State
@@ -37,13 +37,15 @@ export default function App() {
         happiness: 70
     });
 
+
+    // Track initial stats for change calculation
+    const [initialStats, setInitialStats] = useState<{ ecosystem: number, population: number, happiness: number } | null>(null);
+
     // StatItem mapping logic
     // Use simState.State.GlobalVariables for StatItems
     const globals = simState && simState.state && simState.state.globalVariables ? simState.state.globalVariables : {};
 
     // Debug output to verify structure
-    console.log('GameScreen simState:', simState);
-    console.log('GameScreen globals:', globals);
     // Friendly names for global variables
     const friendlyNames: { [key: string]: string } = {
         H: "Happiness",
@@ -54,7 +56,7 @@ export default function App() {
         OilTot: "Oil Production"
     };
 
-    console.log(friendlyNames);
+    //console.log(friendlyNames);
     // Icons for global variables
     const statIcons: { [key: string]: React.ReactNode } = {
         H: <Smile className="w-4 h-4" />,
@@ -149,7 +151,7 @@ export default function App() {
         setDialogueData(session || null);
     }, [currentScenario]);
 
-    const handleChoice = (choice: 'YES' | 'NO') => {
+    const handleChoice = async (choice: 'YES' | 'NO') => {
         const nextState = applyScenario(stats, currentScenario, choice);
         setStats(nextState);
 
@@ -170,11 +172,57 @@ export default function App() {
                 setShowAlert(true);
             }, 800);
         }
+
+        // Calculate which citizen "speaks"
+        const visibleCount = Math.max(0, Math.floor(((simState.state.globalVariables?.P || 0) / 300) * 16));
+        const randomIndex = visibleCount > 0 ? Math.floor(Math.random() * visibleCount) : null;
+
+        // Set the next scenario
+        const all = scenarios;
+        setCurrentScenario(all[Math.floor(Math.random() * all.length)]);
     };
 
     const handleMonthEnd = () => {
-        setTimeout(() => {
+        setTimeout(async () => {
             if (monthIndex < MONTHS.length - 1) {
+
+                if (!simState || !currentScenario) return;
+
+                // Calculate normalized ecosystem (0-1)
+                const normalizedEcosystem = stats.ecosystem / 100;
+                // Calculate d (deforestation rate), A (forest coverage), OilCell
+                const d = 1 - normalizedEcosystem;
+                const A = normalizedEcosystem;
+                const OilCell = d * (1 - A); // Example formula, adjust as needed
+
+                // Divide each value by 100 for cell posting
+                const cellA = A / 100;
+                const cellD = d / 100;
+                const cellOil = OilCell / 100;
+                const Cells = Array.from({ length: 100 }, () => ({ A: cellA, d: cellD, OilCell: cellOil }));
+
+
+                // Build step request with Year, Cells, and previous globalVariables
+                const stepRequest = {
+                    State: {
+                        Year: monthIndex,
+                        Cells,
+                        globalVariables: simState.state.globalVariables
+                    }
+                };
+
+                const stepResult = await stepSimulation(2, 1, stepRequest);
+                setSimState(stepResult);
+
+                // Update parent state with converted values
+                if (stepResult?.state?.globalVariables) {
+                    setStats({
+                        ecosystem: treesToEcosystem(stepResult.state.globalVariables?.TotForest || 300),
+                        population: stepResult.state.globalVariables?.P || 0,
+                        happiness: stepResult.state.globalVariables?.H || 0
+                    });
+                }
+
                 getRandomFact(); // Pick a new fact for the month change
                 setIsTransitioning(true);
 
@@ -195,12 +243,19 @@ export default function App() {
         }, 800);
     };
 
+
     // Handler to start game and fetch simulation project
     const handleStartGame = async () => {
         const sim = await getSimulationForUser(2, "chase.conaway"); // Replace 2 with your projectId if needed
         setSimState(sim);
         setGameStarted(true);
-        setStats({ happiness: simState.state.globalVariables.H || 70, population: simState.state.globalVariables.P || 420, ecosystem: simState.state.globalVariables.E || 60 });
+        const startStats = {
+            happiness: sim?.state?.globalVariables.H || 70,
+            population: sim?.state?.globalVariables?.P || 420,
+            ecosystem: sim?.state?.globalVariables?.E || 60
+        };
+        setStats(startStats);
+        setInitialStats(startStats);
     };
 
     const [stats, setStats] = useState({
@@ -208,6 +263,35 @@ export default function App() {
         population:420,
         ecosystem: 60
     });
+
+    // Helper: Convert number of trees to ecosystem percentage
+    function treesToEcosystem(numTrees: number) {
+        return Math.round((numTrees / 300) * 100);
+    }
+
+    // Helper: Convert ecosystem percentage to number of trees (min 300)
+    function ecosystemToTrees(ecosystem: number) {
+        return Math.max(300, Math.round((ecosystem / 100) * 300));
+    }
+
+    // Helper: Convert GameState to d and A
+    function getDA(ecosystem: number) {
+        const d = ecosystem / 100;
+        const A = 1 - d;
+        return { d, A };
+    }
+
+    // Calculate total signed change and normalize to 0-1 (then percent)
+    let totalChangePercent: number | null = null;
+    if (initialStats) {
+        const ecoChange = stats.ecosystem - initialStats.ecosystem;
+        const popChange = stats.population - initialStats.population;
+        const happyChange = stats.happiness - initialStats.happiness;
+        const sum = ecoChange + popChange + happyChange;
+        // Assume each can change -100 to +100 (adjust if your ranges differ)
+        // So total range is -300 to +300
+        totalChangePercent = ((sum + 300) / 600) * 100;
+    }
 
     return (
         <div className="w-full h-screen bg-slate-900 overflow-hidden selection:bg-cyan-500/30">
@@ -353,10 +437,10 @@ export default function App() {
                                     <div className="flex-1 p-5 flex flex-col gap-4">
                                         <div>
                                             <h4 className="text-slate-800 text-base font-bold mb-1">{currentScenario.title}</h4>
-                                            {dialogueData ? (
+                                            {dialogue? (
                                                 <DialogueTypewriter
                                                     key={currentScenario.id}
-                                                    data={dialogueData}
+                                                    data={dialogue}
                                                     startPlaying={isAnimationComplete}
                                                     onComplete={handleDialogueComplete}
                                                 />
@@ -437,76 +521,59 @@ function StatItem({ icon, label, value, progress, color, textColor }: any) {
         </div>
     );
 }
-interface DialogueData {
-    audioUrl: string;
-    alignment: {
-        characters: string[];
-        character_start_times_seconds: number[];
-        character_end_times_seconds: number[];
-    };
-    normalized_alignment?: {
-        characters: string[];
-        character_start_times_seconds: number[];
-        character_end_times_seconds: number[];
-    };
-}
 
 function DialogueTypewriter({ data, startPlaying, onComplete }: { data: DialogueData, startPlaying: boolean, onComplete: () => void }) {
-    const [visibleChars, setVisibleChars] = useState("");
+    const [visibleChars, setVisibleChars] = useState<string>("");
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const hasStarted = useRef(false);
 
-    function DialogueTypewriter({ data }: { data: DialogueData }) {
-        const [visibleChars, setVisibleChars] = useState<string>("");
-        const audioRef = useRef<HTMLAudioElement | null>(null);
-        const hasStarted = useRef(false); // <--- Add this ref
+    useEffect(() => {
+        // Only start if startPlaying is true AND we haven't started yet for this 'data'
+        if (!startPlaying || hasStarted.current) return;
 
-        useEffect(() => {
-            // Only start if startPlaying is true AND we haven't started yet for this 'data'
-            if (!startPlaying || hasStarted.current) return;
+        const audio = new Audio(data.audioUrl);
+        audioRef.current = audio;
+        hasStarted.current = true;
 
-            const audio = new Audio(data.audioUrl);
-            audioRef.current = audio;
-            hasStarted.current = true; // Mark as started
+        audio.onended = () => {
+            setTimeout(onComplete, 500);
+        };
 
-            audio.onended = () => {
-                setTimeout(onComplete, 500);
-            };
+        const updateText = () => {
+            const currentTime = audio.currentTime;
+            const { characters, character_start_times_seconds } = data.alignment;
+            let currentText = "";
+            for (let i = 0; i < character_start_times_seconds.length; i++) {
+                if (character_start_times_seconds[i] <= currentTime) {
+                    currentText += characters[i];
+                } else { break; }
+            }
+            setVisibleChars(currentText);
+            if (!audio.paused && !audio.ended) requestAnimationFrame(updateText);
+        };
 
-            const updateText = () => {
-                const currentTime = audio.currentTime;
-                const { characters, character_start_times_seconds } = data.alignment;
-                let currentText = "";
-                for (let i = 0; i < character_start_times_seconds.length; i++) {
-                    if (character_start_times_seconds[i] <= currentTime) {
-                        currentText += characters[i];
-                    } else { break; }
-                }
-                setVisibleChars(currentText);
-                if (!audio.paused && !audio.ended) requestAnimationFrame(updateText);
-            };
+        audio.play().catch(e => console.error(e));
+        const animId = requestAnimationFrame(updateText);
 
-            audio.play().catch(e => console.error(e));
-            const animId = requestAnimationFrame(updateText);
+        return () => {
+            audio.pause();
+            cancelAnimationFrame(animId);
+            // We don't reset hasStarted here because the 'key' on the 
+            // component will handle the reset when the scenario changes.
+        };
+    }, [data, startPlaying, onComplete]);
 
-            return () => {
-                audio.pause();
-                cancelAnimationFrame(animId);
-                // We don't reset hasStarted here because the 'key' on the 
-                // component will handle the reset when the scenario changes.
-            };
-        }, [data, startPlaying, onComplete]);
-
-        return (
-            <p className="text-slate-600 text-sm leading-relaxed font-medium">
-                {visibleChars}
-                {/* Show cursor only while playing */}
-                {(!audioRef.current?.ended && hasStarted.current) && (
-                    <motion.span
-                        animate={{ opacity: [0, 1, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.8 }}
-                        className="inline-block w-1.5 h-4 ml-1 bg-primary align-middle"
-                    />
-                )}
-            </p>
-        );
-    }
+    return (
+        <p className="text-slate-600 text-sm leading-relaxed font-medium">
+            {visibleChars}
+            {/* Show cursor only while playing */}
+            {(!audioRef.current?.ended && hasStarted.current) && (
+                <motion.span
+                    animate={{ opacity: [0, 1, 0] }}
+                    transition={{ repeat: Infinity, duration: 0.8 }}
+                    className="inline-block w-1.5 h-4 ml-1 bg-primary align-middle"
+                />
+            )}
+        </p>
+    );
 }
