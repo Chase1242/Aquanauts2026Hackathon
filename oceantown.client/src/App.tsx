@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
-import ISLAND_IMAGE from './assets/ocean.png';
+import ISLAND_IMAGE from './assets/ocean.jpg';
 
 
 export default function App() {
