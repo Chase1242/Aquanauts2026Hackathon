@@ -1,3 +1,4 @@
+import TitleScreen from "./TitleScreen";
 import { useState, useEffect, useRef } from 'react'; import
 { motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
@@ -6,6 +7,8 @@ import IslandGame from "./IslandGame";
 
 
 export default function App() {
+    const [gameStarted, setGameStarted] = useState(false);
+
     // Handles Dialog Appearing
     const [showAlert, setShowAlert] = useState(false);
 
@@ -28,6 +31,11 @@ export default function App() {
         setDialogueData(null); // Clear the data so the next alert works
         setIsAnimationComplete(false); // Reset animation state
     };
+
+    // If the game hasn't started, show the title screen
+    if (!gameStarted) {
+        return <TitleScreen onStartGame={() => setGameStarted(true)} />;
+    }
 
     return (
         <div className="relative flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background-light">
