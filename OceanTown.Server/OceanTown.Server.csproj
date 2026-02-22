@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SpaRoot>..\oceantown.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>https://localhost:62602</SpaProxyServerUrl>
+    <SpaProxyServerUrl>https://localhost:61691</SpaProxyServerUrl>
   </PropertyGroup>
 
   <ItemGroup>
