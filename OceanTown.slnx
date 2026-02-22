@@ -5,8 +5,12 @@
   </Project>
   <Project Path="OceanTown.Database.Services/OceanTown.Database.Services.csproj" Id="fba7bed4-9956-4704-b30e-c9a2ff36a1ef" />
   <Project Path="OceanTown.Database/OceanTown.Database.csproj" Id="ba1be5cc-a726-4137-b823-64f84dcc08e0" />
-  <Project Path="OceanTown.Engine.Tests/OceanTown.Engine.Tests.csproj" />
+  <Project Path="OceanTown.Engine.Tests/OceanTown.Engine.Tests.csproj">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
   <Project Path="OceanTown.Engine/OceanTown.Engine.csproj" Id="dfa247db-f190-4a00-a13d-70fa65aa268b" />
   <Project Path="OceanTown.Server/OceanTown.Server.csproj" />
-  <Project Path="OceanTown.Shared/OceanTown.Shared.csproj" Id="8e3cb92f-52fa-4a6f-beab-30fe6a317cad" />
+  <Project Path="OceanTown.Shared/OceanTown.Shared.csproj" Id="8e3cb92f-52fa-4a6f-beab-30fe6a317cad">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
 </Solution>
