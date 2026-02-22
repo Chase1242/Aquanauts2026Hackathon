@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --color-primary: #00bfa5;
+    --color-primary-dark: #008f7a;
+    --color-background-light: #f0f4f8;
+    --color-background-dark: #1a365d;
+    --color-surface-light: #ffffff;
+    --color-ocean-blue: #0099cc;
+    --color-ocean-light: #4dd2ff;
+}
+
+@layer base {
+    body {
+        @apply bg-background-light text-slate-600 font-sans;
+    }
+}
+
+@layer components {
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .ocean-bg {
+        background: linear-gradient(135deg, #4fc3f7 0%, #0288d1 100%);
+        position: relative;
+    }
+
+        .ocean-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 10%), radial-gradient(circle at 80% 60%, rgba(255,255,255,0.15) 0%, transparent 15%);
+            background-size: 100% 100%;
+            pointer-events: none;
+        }
+
+    .wave-lines {
+        background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 20px);
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e2e8f0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
