@@ -76,13 +76,8 @@ export default function App() {
 
                 {/* SCROLL WHEEL AREA */}
                 <div className="relative flex-1 overflow-hidden group/scroll">
-                    {/* Top Fade Gradient */}
-                    <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white/90 to-transparent z-10 pointer-events-none" />
-
                     {/* The Scrollable Container */}
-                    <div className="h-full overflow-y-auto p-6 space-y-8 scroll-smooth scrollbar-hide 
-                                    [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]
-                                    hover:[mask-image:none] transition-all duration-500">
+                    <div className="h-full overflow-y-auto p-6 space-y-8 scroll-smooth scrollbar-hide">
 
                         <StatItem
                             icon={<Smile className="w-4 h-4" />}
@@ -127,7 +122,6 @@ export default function App() {
                             delay={0.3}
                         />
 
-                        {/* NEW STAT ITEMS */}
                         <StatItem
                             icon={<Bot className="w-4 h-4" />}
                             label="AI Core Load"
@@ -161,11 +155,9 @@ export default function App() {
                             delay={0.6}
                         />
 
-                        <div className="h-12" /> {/* Spacer for bottom scroll padding */}
+                        {/* Spacer for bottom scroll padding */}
+                        <div className="h-12" /> 
                     </div>
-
-                    {/* Bottom Fade Gradient */}
-                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/90 to-transparent z-10 pointer-events-none" />
                 </div>
             </aside>
 
