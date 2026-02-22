@@ -54,7 +54,6 @@ function People({
         })
     );
 
-    // 🌊 Movement + vapor loop
     useEffect(() => {
         let animationFrame;
 
@@ -63,16 +62,13 @@ function People({
 
             setPeople(prev =>
                 prev.map(p => {
-                    // If exiting → vapor rise
                     if (p.exiting) {
                         const newFade = Math.max(p.fade - 0.02, 0);
                         return { ...p, y: p.y - 0.3, fade: newFade };
                     }
 
-                    // If frozen → don't move
                     if (frozen) return p;
 
-                    // Wandering logic
                     let vx = p.vx + (Math.random() - 0.5) * 0.01;
                     let vy = p.vy + (Math.random() - 0.5) * 0.01;
 
@@ -105,13 +101,11 @@ function People({
         return () => cancelAnimationFrame(animationFrame);
     }, [frozen]);
 
-    // 🌫 Exit OR re-enter depending on visibleCount
     useEffect(() => {
         setPeople(prev =>
             prev.map((p, index) => {
                 // should be visible
                 if (index < visibleCount) {
-                    // IMPORTANT: if population increased, bring them back
                     if (p.exiting || p.fade < 1) {
                         return { ...p, exiting: false, fade: 1 };
                     }
@@ -125,7 +119,6 @@ function People({
         );
     }, [visibleCount]);
 
-    // 🧠 Notify parent when everyone is fully gone
     useEffect(() => {
         const everyoneGone =
             visibleCount === 0 && people.every(p => p.exiting && p.fade <= 0);
@@ -142,8 +135,7 @@ function People({
                 if (!isVisible && !p.exiting) return null;
                 if (p.exiting && p.fade <= 0) return null;
 
-                const showBubble = bubbleVisible && index === selectedCitizen && !p.exiting;
-
+                const showBubble = false; //  disable bubble entirely
                 return (
                     <div
                         key={p.id}

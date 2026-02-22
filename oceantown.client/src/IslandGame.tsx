@@ -1,9 +1,7 @@
-import { useState } from 'react';
-import IslandSceneRaw from "./components/IslandScene";
-const IslandScene: any = IslandSceneRaw;
-// @ts-ignore
-import DecisionModalRaw from "./components/DecisionModal";
-const DecisionModal: any = DecisionModalRaw;
+
+import React, { useState } from "react";
+import IslandScene from "./components/IslandScene";
+import DecisionModal from "./components/DecisionModal";
 import { applyScenario } from "./services/gameEngine";
 import { scenarios } from "./services/scenarioEngine";
 import { getCitizenDialogue } from "./services/geminiService";
@@ -20,12 +18,20 @@ type CitizenReaction = {
     tone?: string;
 };
 
+// keep it typed without `any`
+type Scenario = {
+    id: string;
+    title: string;
+    description: string;
+    [key: string]: unknown;
+};
+
 function getRandomScenario(state: GameState) {
+    const all = scenarios as unknown as Scenario[];
+
     if (state.ecosystem < 40) {
-        const crisisEvents = scenarios.filter((s: any) =>
-            s.id.includes("storm") ||
-            s.id.includes("oil") ||
-            s.id.includes("coral")
+        const crisisEvents = all.filter(
+            (s) => s.id.includes("storm") || s.id.includes("oil") || s.id.includes("coral")
         );
 
         if (crisisEvents.length > 0) {
@@ -33,27 +39,32 @@ function getRandomScenario(state: GameState) {
         }
     }
 
-    return scenarios[Math.floor(Math.random() * scenarios.length)];
+    return all[Math.floor(Math.random() * all.length)];
 }
 
 export default function IslandGame() {
     const [state, setState] = useState<GameState>({
         ecosystem: 80,
         population: 300,
-        happiness: 70
+        happiness: 70,
     });
 
-    const [currentScenario, setCurrentScenario] = useState<any>(
-        scenarios[Math.floor(Math.random() * scenarios.length)]
-    );
+    // ✅ lazy initializer fixes "Math.random is impure during render"
+    const [currentScenario, setCurrentScenario] = useState<Scenario>(() => {
+        const all = scenarios as unknown as Scenario[];
+        return all[Math.floor(Math.random() * all.length)];
+    });
 
-    const [loadingAI, setLoadingAI] = useState<boolean>(false);
+    const [loadingAI, setLoadingAI] = useState(false);
     const [citizenReaction, setCitizenReaction] = useState<CitizenReaction | null>(null);
     const [selectedCitizen, setSelectedCitizen] = useState<number | null>(null);
-    const [bubbleVisible, setBubbleVisible] = useState<boolean>(false);
+    const [bubbleVisible, setBubbleVisible] = useState(false);
 
-    async function handleDecision(choice: string) {
-        const updated = applyScenario(state, currentScenario, choice);
+    // ✅ block popup overlay for now (replaces `false && ...` ESLint error)
+    const showReaction = false;
+
+    async function handleDecision(choice: "YES" | "NO") {
+        const updated = applyScenario(state, currentScenario, choice) as GameState;
 
         updated.ecosystem = Math.min(updated.ecosystem, 100);
         updated.population = Math.min(updated.population, 300);
@@ -65,22 +76,19 @@ export default function IslandGame() {
         setBubbleVisible(false);
         setCitizenReaction(null);
 
-        const aiResponse = await getCitizenDialogue(
-            updated,
-            currentScenario.title,
-            choice
-        );
+        const aiResponse = await getCitizenDialogue(updated, currentScenario.title, choice);
 
         setCitizenReaction(aiResponse);
         setLoadingAI(false);
 
-        const visibleCount = Math.floor((updated.population / 300) * 16);
-        const randomIndex = Math.floor(Math.random() * visibleCount);
+        const visibleCount = Math.max(0, Math.floor((updated.population / 300) * 16));
+        const randomIndex =
+            visibleCount > 0 ? Math.floor(Math.random() * visibleCount) : null;
 
         setSelectedCitizen(randomIndex);
-        setBubbleVisible(true);
+        setBubbleVisible(visibleCount > 0);
 
-        setCurrentScenario(getRandomScenario(updated));
+        setCurrentScenario(getRandomScenario(updated) as Scenario);
     }
 
     function closeReaction() {
@@ -107,7 +115,7 @@ export default function IslandGame() {
                 onNo={() => handleDecision("NO")}
             />
 
-            {citizenReaction && (
+            {showReaction && citizenReaction && (
                 <div className="speechOverlay">
                     <div className="speechBox">
                         <p>{citizenReaction.citizen}</p>
