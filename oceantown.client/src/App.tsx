@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
+import ISLAND_IMAGE from './assets/ocean.png';
 
-const ISLAND_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCyXxxa4xWXA5u2g-1o3sK0NlfoYdoABqFX1kkFbB1_SAwtCnc9ZxRXBuz6XV3t2rVqWtUTbmBUv4_R20Mqa2Q5yl4SpWO3rKdt0G0YeUCWiDfx0tZ-DG99-vi0CzgheX5Is3OmWrciNMQrozCLCoiz8byNYXiwWB-G9dgc5uPTPA8M0GTlZ5QNgLACKwLnD0mKu2gKXXRGwShxBMwf6k-9xm51GwEbGnvN3phcwj-mWTWDlpotRRzigLf9gaOxqHPfmqUwQoi6Rs0';
 
 export default function App() {
     return (
