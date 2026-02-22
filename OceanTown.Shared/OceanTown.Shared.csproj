@@ -6,9 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\OceanTown.Database\OceanTown.Database.csproj" />
-    <ProjectReference Include="..\OceanTown.Shared\OceanTown.Shared.csproj" />
-  </ItemGroup>
-
 </Project>

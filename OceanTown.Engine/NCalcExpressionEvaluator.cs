@@ -5,6 +5,7 @@ namespace OceanTown.Engine;
 
 public sealed class NCalcExpressionEvaluator : IExpressionEvaluator
 {
+    private readonly Expression? expression = null;
     public double Evaluate(string expressionText, IReadOnlyDictionary<string, double> variables)
     {
         var expression = new Expression(expressionText);

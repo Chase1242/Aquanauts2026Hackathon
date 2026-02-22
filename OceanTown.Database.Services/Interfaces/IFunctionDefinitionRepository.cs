@@ -1,6 +1,4 @@
 using OceanTown.Database.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OceanTown.Database.Services.Interfaces;
 
@@ -11,4 +9,9 @@ public interface IFunctionDefinitionRepository
     Task AddAsync(FunctionDefinition entity);
     Task UpdateAsync(FunctionDefinition entity);
     Task DeleteAsync(int id);
+
+    Task<IList<FunctionDef>> GetFunctionsByProjectIdAsync(int projectId, CancellationToken cancellationToken);
 }
+
+public sealed record FunctionDef(int FunctionDefinitionId, string Name, string ExpressionText,
+    int ReturnVariableId, string? Category);

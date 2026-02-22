@@ -44,4 +44,16 @@ public class FunctionDefinitionRepository : IFunctionDefinitionRepository
             await this._context.SaveChangesAsync();
         }
     }
+
+    public async Task<IList<FunctionDef>> GetFunctionsByProjectIdAsync(
+        int projectId,
+        CancellationToken cancellationToken
+        )
+    {
+        return await this._context.FunctionDefinitions
+            .Where(f => f.SimulationProjectId == projectId)
+            .Select(f => new FunctionDef(f.FunctionDefinitionId, f.Name, f.ExpressionText, f.ReturnVariableId, f.Category))
+            .ToListAsync(cancellationToken);
+    }
+
 }

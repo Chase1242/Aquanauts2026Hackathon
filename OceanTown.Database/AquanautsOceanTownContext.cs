@@ -26,6 +26,10 @@ public partial class AquanautsOceanTownContext : DbContext
 
     public virtual DbSet<VariableDefinition> VariableDefinitions { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=devdb.asis.wsu.edu;Initial Catalog=Aquanauts-OceanTown;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False;Command Timeout=30");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<FunctionDefinition>(entity =>
@@ -36,6 +40,7 @@ public partial class AquanautsOceanTownContext : DbContext
 
             entity.HasIndex(e => e.ReturnVariableId, "IX_FunctionDefinition_ReturnVariable");
 
+            entity.Property(e => e.Category).HasMaxLength(64);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())", "DF_FunctionDefinition_CreatedAt");
             entity.Property(e => e.Description).HasMaxLength(512);
             entity.Property(e => e.Name).HasMaxLength(128);

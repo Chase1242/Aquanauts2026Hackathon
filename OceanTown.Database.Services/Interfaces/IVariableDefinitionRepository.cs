@@ -1,6 +1,4 @@
 using OceanTown.Database.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OceanTown.Database.Services.Interfaces;
 
@@ -11,4 +9,8 @@ public interface IVariableDefinitionRepository
     Task AddAsync(VariableDefinition entity);
     Task UpdateAsync(VariableDefinition entity);
     Task DeleteAsync(int id);
+
+    Task<IList<VariableDef>> GetVariablesByProjectIdAsync(int projectId, CancellationToken cancellationToken);
 }
+
+public sealed record VariableDef(int VariableDefinitionId, string Code);

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Caching.Memory;
 using OceanTown.Database;
 using OceanTown.Database.Services.Interfaces;
 using OceanTown.Database.Services.Repositories;
+using OceanTown.Engine;
+using OceanTown.Engine.Interfaces;
 using OceanTown.Server;
 using OceanTown.Server.Infrastructure;
 
@@ -31,13 +33,6 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
-builder.Services.AddDbContextPool<AquanautsOceanTownContext>((sp, opt) =>
-{
-    SecretsManagementClient secretsClient = sp.GetRequiredService<SecretsManagementClient>();
-    string connectionString = secretsClient.GetDbConn().Result;
-    opt.UseSqlServer(connectionString);
-
-});
 
 // Register repository interfaces
 builder.Services.AddScoped<IFunctionDefinitionRepository, FunctionDefinitionRepository>();
@@ -46,6 +41,9 @@ builder.Services.AddScoped<IGameSaveRepository, GameSaveRepository>();
 builder.Services.AddScoped<ISimulationProjectRepository, SimulationProjectRepository>();
 builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 builder.Services.AddScoped<IVariableDefinitionRepository, VariableDefinitionRepository>();
+
+builder.Services.AddScoped<ISimulationEngine, SimulationEngine>();
+builder.Services.AddScoped<ISimulationLoader, SimulationLoader>();
 
 builder.Services.AddEndpointsApiExplorer();
 // Register the Swagger generator
@@ -66,6 +64,14 @@ builder.Services.AddScoped<SecretsManagementClient>(sp =>
 
     return new SecretsManagementClient(apiBaseUrl, apiKey, applicationName, environmentName,
         memoryCache, configuration, logger);
+});
+
+builder.Services.AddDbContextPool<AquanautsOceanTownContext>((sp, opt) =>
+{
+    SecretsManagementClient secretsClient = sp.GetRequiredService<SecretsManagementClient>();
+    string connectionString = secretsClient.GetDbConn().Result;
+    opt.UseSqlServer(connectionString);
+
 });
 
 var app = builder.Build();

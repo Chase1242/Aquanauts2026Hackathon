@@ -18,6 +18,8 @@ public partial class FunctionDefinition
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Category { get; set; }
+
     public virtual ICollection<FunctionParameter> FunctionParameters { get; set; } = new List<FunctionParameter>();
 
     public virtual VariableDefinition ReturnVariable { get; set; } = null!;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace OceanTown.Database.Entities;
+﻿namespace OceanTown.Database.Entities;
 
 public partial class SimulationProject
 {

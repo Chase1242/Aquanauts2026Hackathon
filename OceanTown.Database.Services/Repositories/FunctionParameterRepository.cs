@@ -44,4 +44,15 @@ public class FunctionParameterRepository : IFunctionParameterRepository
             await this._context.SaveChangesAsync();
         }
     }
+
+    public async Task<IList<ParameterDef>> GetFunctionParametersByProjectId(int projId,
+        IList<int> funcIds, CancellationToken ct)
+    {
+        return await this._context.FunctionParameters
+            .AsNoTracking()
+            .Where(p => funcIds.Contains(p.FunctionDefinitionId))
+            .Select(p => new ParameterDef(p.FunctionDefinitionId, p.Name, p.VariableDefinitionId, p.ConstantValue))
+            .ToListAsync(ct);
+
+    }
 }

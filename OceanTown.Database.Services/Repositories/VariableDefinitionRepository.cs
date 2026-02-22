@@ -44,4 +44,12 @@ public class VariableDefinitionRepository : IVariableDefinitionRepository
             await this._context.SaveChangesAsync();
         }
     }
+
+    public async Task<IList<VariableDef>> GetVariablesByProjectIdAsync(int projectId, CancellationToken cancellationToken)
+    {
+        return await this._context.VariableDefinitions
+            .Where(v => v.SimulationProjectId == projectId)
+            .Select(v => new VariableDef(v.VariableDefinitionId, v.Code))
+            .ToListAsync(cancellationToken);
+    }
 }

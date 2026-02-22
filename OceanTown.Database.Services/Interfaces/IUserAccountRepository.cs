@@ -1,6 +1,4 @@
 using OceanTown.Database.Entities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace OceanTown.Database.Services.Interfaces;
 
