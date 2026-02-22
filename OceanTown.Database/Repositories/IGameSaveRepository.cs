@@ -1,0 +1,14 @@
+using OceanTown.Database.Entities;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace OceanTown.Database.Repositories;
+
+public interface IGameSaveRepository
+{
+    Task<GameSave?> GetByIdAsync(int id);
+    Task<IEnumerable<GameSave>> GetAllAsync();
+    Task AddAsync(GameSave entity);
+    Task UpdateAsync(GameSave entity);
+    Task DeleteAsync(int id);
+}
