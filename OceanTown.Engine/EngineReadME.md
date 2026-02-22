@@ -112,6 +112,7 @@ $$K_t =
 | $W_t$     | Population happiness / well‑being         | State      |
 | $\beta_W$ | Happiness elasticity of carrying capacity | **Tuning** |
 ___
+
 # 3️⃣ Birth Rate Model
 ## 8. Birth Rate
 $$b_t =
