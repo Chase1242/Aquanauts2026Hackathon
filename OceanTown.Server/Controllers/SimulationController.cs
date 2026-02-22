@@ -11,11 +11,11 @@ namespace OceanTown.Server.Controllers;
 public sealed class SimulationController : ControllerBase
 {
     private readonly ISimulationLoader _loader;
-    private readonly SimulationEngine _engine;
+    private readonly ISimulationEngine _engine;
 
     public SimulationController(
         ISimulationLoader loader,
-        SimulationEngine engine)
+        ISimulationEngine engine)
     {
         this._loader = loader;
         this._engine = engine;
@@ -48,7 +48,7 @@ public sealed class SimulationController : ControllerBase
         var nextState = this._engine.StepYear(
             request.State,
             simulation,
-            plan ?? throw new ArgumentNullException(nameof(plan)),
+            plan,
             snapshot: request.Snapshot
         );
 

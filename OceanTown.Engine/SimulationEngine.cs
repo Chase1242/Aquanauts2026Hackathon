@@ -27,7 +27,7 @@ public sealed class SimulationEngine : ISimulationEngine
             var cellRead = snapshot ? new Dictionary<string, double>(cell) : cell;
             var cellNext = new Dictionary<string, double>(cellRead);
 
-            foreach (var fn in plan.OrderedFunctions.Where(of => of.Category == "Cell" || of.Category == null)) // <-- split plan!
+            foreach (var fn in def.Functions.Where(of => of.Category == "Cell" || of.Category == null)) // <-- split plan!
             {
                 var expr = GetOrCreateExpression(fn.FuncId, fn.Expression);
 
@@ -62,7 +62,7 @@ public sealed class SimulationEngine : ISimulationEngine
         Aggregate(next.Cells, next.GlobalVariables);
 
         // ---- Phase C: global functions once ----
-        foreach (var fn in plan.OrderedFunctions.Where(of => of.Category == "Global"))
+        foreach (var fn in def.Functions.Where(of => of.Category == "Global"))
         {
             var expr = GetOrCreateExpression(fn.FuncId, fn.Expression);
 

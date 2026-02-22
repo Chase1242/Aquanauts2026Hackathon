@@ -52,8 +52,8 @@ public sealed class SimulationLoader(IFunctionDefinitionRepository functionRepo,
             ).ToList();
 
         var sim = new Simulation(projId, varsById, varsByCode, functionDefinitions);
-        ExecutionPlan plan = PlanCompiler.Compile(sim);
-        sim.Plan = plan;
+        //ExecutionPlan plan = PlanCompiler.Compile(sim);
+        //sim.Plan = plan;
 
         return sim;
     }

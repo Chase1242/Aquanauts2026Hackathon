@@ -15,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 // configuration since it's more likely to be safe for use in a cookie name
 string cookieBaseName = $".{builder.Environment.ApplicationName.Replace(" ", "")}";
 
+builder.Services.AddKeyedScoped("ApplicationDisplayName",
+            (sp, _) => sp.GetRequiredService<IConfiguration>().GetApplicationDisplayName());
+builder.Services.AddKeyedScoped("EnvironmentName",
+    (sp, o) => sp.GetRequiredService<IWebHostEnvironment>().EnvironmentName);
+
 // AutoDisplay needs this for generating URLs
 // It's obsolete, but there currently isn't any alternative
 // https://github.com/dotnet/aspnetcore/issues/64361
@@ -25,6 +30,22 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(opt =>
     opt.Cookie.Name = $"{cookieBaseName}.Session");
+
+builder.Services.AddScoped<SecretsManagementClient>(sp =>
+{
+    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+    IMemoryCache memoryCache = sp.GetRequiredService<IMemoryCache>();
+    ILogger<SecretsManagementClient> logger = sp
+        .GetRequiredService<ILogger<SecretsManagementClient>>();
+
+    string apiBaseUrl = configuration.GetSecretsManagementBaseApiUrl();
+    string apiKey = configuration.GetSecretsManagementApiKey();
+    string applicationName = "OceanTown";
+    string environmentName = sp.GetRequiredService<IHostEnvironment>().EnvironmentName;
+
+    return new SecretsManagementClient(apiBaseUrl, apiKey, applicationName, environmentName,
+        memoryCache, configuration, logger);
+});
 
 // Add services to the container.
 
@@ -49,24 +70,7 @@ builder.Services.AddEndpointsApiExplorer();
 // Register the Swagger generator
 builder.Services.AddSwaggerGen();
 
-
-builder.Services.AddScoped<SecretsManagementClient>(sp =>
-{
-    IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-    IMemoryCache memoryCache = sp.GetRequiredService<IMemoryCache>();
-    ILogger<SecretsManagementClient> logger = sp
-        .GetRequiredService<ILogger<SecretsManagementClient>>();
-
-    string apiBaseUrl = configuration.GetSecretsManagementBaseApiUrl();
-    string apiKey = configuration.GetSecretsManagementApiKey();
-    string applicationName = "OceanTown";
-    string environmentName = sp.GetRequiredService<IHostEnvironment>().EnvironmentName;
-
-    return new SecretsManagementClient(apiBaseUrl, apiKey, applicationName, environmentName,
-        memoryCache, configuration, logger);
-});
-
-builder.Services.AddDbContextPool<AquanautsOceanTownContext>((sp, opt) =>
+builder.Services.AddDbContext<AquanautsOceanTownContext>((sp, opt) =>
 {
     SecretsManagementClient secretsClient = sp.GetRequiredService<SecretsManagementClient>();
     string connectionString = secretsClient.GetDbConn().Result;
