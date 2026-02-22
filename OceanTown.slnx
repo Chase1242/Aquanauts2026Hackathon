@@ -3,7 +3,8 @@
     <Build />
     <Deploy />
   </Project>
-  <Project Path="OceanTown.Database/OceanTown.Database.csproj" Id="ba1be5cc-a726-4137-b823-64f84dcc08e0" />
   <Project Path="OceanTown.Database.Services/OceanTown.Database.Services.csproj" Id="fba7bed4-9956-4704-b30e-c9a2ff36a1ef" />
+  <Project Path="OceanTown.Database/OceanTown.Database.csproj" Id="ba1be5cc-a726-4137-b823-64f84dcc08e0" />
+  <Project Path="OceanTown.Engine/OceanTown.Engine.csproj" Id="dfa247db-f190-4a00-a13d-70fa65aa268b" />
   <Project Path="OceanTown.Server/OceanTown.Server.csproj" />
 </Solution>

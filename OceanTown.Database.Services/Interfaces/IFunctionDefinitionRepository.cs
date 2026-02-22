@@ -2,7 +2,7 @@ using OceanTown.Database.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace OceanTown.Database.Repositories;
+namespace OceanTown.Database.Services.Interfaces;
 
 public interface IFunctionDefinitionRepository
 {

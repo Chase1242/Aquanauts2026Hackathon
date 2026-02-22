@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using OceanTown.Database;
+using OceanTown.Database.Services.Interfaces;
+using OceanTown.Database.Services.Repositories;
 using OceanTown.Server;
 using OceanTown.Server.Infrastructure;
 
@@ -37,6 +39,19 @@ builder.Services.AddDbContext<AquanautsOceanTownContext>((sp, opt) =>
 
 });
 
+// Register repository interfaces
+builder.Services.AddScoped<IFunctionDefinitionRepository, FunctionDefinitionRepository>();
+builder.Services.AddScoped<IFunctionParameterRepository, FunctionParameterRepository>();
+builder.Services.AddScoped<IGameSaveRepository, GameSaveRepository>();
+builder.Services.AddScoped<ISimulationProjectRepository, SimulationProjectRepository>();
+builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+builder.Services.AddScoped<IVariableDefinitionRepository, VariableDefinitionRepository>();
+
+builder.Services.AddEndpointsApiExplorer();
+// Register the Swagger generator
+builder.Services.AddSwaggerGen();
+
+
 builder.Services.AddScoped<SecretsManagementClient>(sp =>
 {
     IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
@@ -62,6 +77,10 @@ app.MapStaticAssets();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    app.UseSwagger();
+    // Serves the Swagger UI
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

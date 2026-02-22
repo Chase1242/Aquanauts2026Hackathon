@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -14,13 +14,16 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
       <Version>10.*-*</Version>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\oceantown.client\oceantown.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\OceanTown.Database.Services\OceanTown.Database.Services.csproj" />
     <ProjectReference Include="..\OceanTown.Database\OceanTown.Database.csproj" />
+    <ProjectReference Include="..\OceanTown.Engine\OceanTown.Engine.csproj" />
   </ItemGroup>
 
 </Project>
