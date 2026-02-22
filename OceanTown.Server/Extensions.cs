@@ -120,6 +120,7 @@ public static class Extensions
         {
             SimulationProjectId = simulationProjectId,
             UserAccountId = userAccountId,
+            SaveName = $"{userAccountId}-{DateTime.Now.Ticks}",
             GameStateJson = json,
             CreatedAt = DateTime.UtcNow,
             EngineVersion = engineVersion

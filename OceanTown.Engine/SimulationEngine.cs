@@ -1,5 +1,6 @@
 ﻿using OceanTown.Engine.Interfaces;
 using OceanTown.Shared;
+using static OceanTown.Engine.Aggregator;
 
 namespace OceanTown.Engine;
 
@@ -7,7 +8,8 @@ public sealed class SimulationEngine : ISimulationEngine
 {
     private readonly Dictionary<int, NCalc.Expression> _exprCache = new();
 
-    public GameState StepYear(GameState current, Simulation def, ExecutionPlan plan, bool snapshot = true)
+    public GameState StepYear(GameState current, Simulation def, ExecutionPlan plan,
+        IList<AggregationRule> rules, bool snapshot = true)
     {
 
         var globalRead = snapshot
@@ -59,7 +61,7 @@ public sealed class SimulationEngine : ISimulationEngine
         }
 
         // ---- Phase B: aggregate next.Cells -> next.GlobalVariables ----
-        Aggregate(next.Cells, next.GlobalVariables);
+        Aggregator.Apply(next.Cells, next.GlobalVariables, rules);
 
         // ---- Phase C: global functions once ----
         foreach (var fn in def.Functions.Where(of => of.Category == "Global"))

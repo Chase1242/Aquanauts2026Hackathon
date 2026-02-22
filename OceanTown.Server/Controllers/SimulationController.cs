@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OceanTown.Database.Services.Interfaces;
+using OceanTown.Engine;
 using OceanTown.Engine.Interfaces;
 using OceanTown.Shared;
+using static OceanTown.Engine.Aggregator;
 
 namespace OceanTown.Server.Controllers;
 
@@ -13,15 +15,18 @@ public sealed class SimulationController : ControllerBase
     private readonly ISimulationLoader _loader;
     private readonly ISimulationEngine _engine;
     private readonly IGameSaveRepository _gameSaveRepository;
+    private readonly IUserAccountRepository _userAccountRepository;
 
     public SimulationController(
         ISimulationLoader loader,
         ISimulationEngine engine,
-        IGameSaveRepository gameSaveRepository)
+        IGameSaveRepository gameSaveRepository,
+        IUserAccountRepository userAccountRepository)
     {
         this._loader = loader;
         this._engine = engine;
         this._gameSaveRepository = gameSaveRepository;
+        this._userAccountRepository = userAccountRepository;
     }
 
     /// <summary>
@@ -44,16 +49,24 @@ public sealed class SimulationController : ControllerBase
     {
         var simulation = await this._loader.LoadAsync(projectId, ct);
         var game = await this._gameSaveRepository.GetByUsernameAsync(username);
-        return Ok(new LoadResponse { Simulation = simulation, State = game!.ToGameState() });
+        var state = game!.ToGameState();
+        Aggregator.Apply(state.Cells, state.GlobalVariables, new List<AggregationRule>
+            {
+                new("TotForest", AggregateOp.Sum, "A"),
+                new("AvgForest", AggregateOp.Avg, "A"),
+                new("OilTot", AggregateOp.Sum, "OilCell"),
+            });
+        return Ok(new LoadResponse { Simulation = simulation, State = state });
     }
 
     /// <summary>
     /// Advance the simulation by one year.
     /// </summary>
-    [HttpPost("{projectId:int}/step")]
+    [HttpPost("{projectId:int}/step/{userId:int}")]
     [ProducesResponseType(typeof(StepResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Step(
         int projectId,
+        int userId,
         [FromBody] StepRequest request,
         CancellationToken ct)
     {
@@ -64,8 +77,17 @@ public sealed class SimulationController : ControllerBase
             request.State,
             simulation,
             plan,
+            new List<AggregationRule>
+            {
+                new("TotForest", AggregateOp.Sum, "A"),
+                new("AvgForest", AggregateOp.Avg, "A"),
+                new("OilTot", AggregateOp.Sum, "OilCell"),
+            },
             snapshot: request.Snapshot
         );
+
+        var gameSave = nextState.CreateGameSaveFromState(projectId, userId);
+        await this._gameSaveRepository.AddAsync(gameSave);
 
         return Ok(new StepResponse
         {
