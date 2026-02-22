@@ -3,5 +3,6 @@
     <Build />
     <Deploy />
   </Project>
+  <Project Path="OceanTown.Database.Services/OceanTown.Database.Services.csproj" Id="fba7bed4-9956-4704-b30e-c9a2ff36a1ef" />
   <Project Path="OceanTown.Server/OceanTown.Server.csproj" />
 </Solution>
