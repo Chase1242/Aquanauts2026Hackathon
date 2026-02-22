@@ -31,7 +31,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddMemoryCache();
-builder.Services.AddDbContext<AquanautsOceanTownContext>((sp, opt) =>
+builder.Services.AddDbContextPool<AquanautsOceanTownContext>((sp, opt) =>
 {
     SecretsManagementClient secretsClient = sp.GetRequiredService<SecretsManagementClient>();
     string connectionString = secretsClient.GetDbConn().Result;
