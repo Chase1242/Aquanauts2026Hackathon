@@ -100,11 +100,7 @@ $K^{jobs}_t = k_J \cdot JobCapacity_t$
 ___
 ## 7. Effective Carrying Capacity
 
-$$K_t =
-
-\min\!\left(K^{land}_t,\;K^{food}_t,\;K^{jobs}_t\right)
-
-\cdot \left(1 + \beta_W (W_t - 0.5)\right)$$
+$$K_t =\min\!\left(K^{land}_t,\;K^{food}_t,\;K^{jobs}_t\right)\cdot \left(1 + \beta_W (W_t - 0.5)\right)$$
 
 | Symbol    | Description                               | Type       |
 | --------- | ----------------------------------------- | ---------- |
@@ -115,18 +111,7 @@ ___
 
 # 3️⃣ Birth Rate Model
 ## 8. Birth Rate
-$$b_t =
-
-b_0
-
-\cdot \left(1 - \gamma \frac{P_t}{K_t}\right)
-
-\cdot (0.5 + 0.5F_t)
-
-\cdot (0.5 + 0.5W_t)
-
-\cdot h(Dev_t)
-$$
+$$b_t =b_0\cdot \left(1 - \gamma \frac{P_t}{K_t}\right)\cdot (0.5 + 0.5F_t)\cdot (0.5 + 0.5W_t)\cdot h(Dev_t)$$
 
 | Symbol     | Description                     | Type       |
 | ---------- | ------------------------------- | ---------- |
@@ -150,18 +135,7 @@ ___
 # 4️⃣ Death Rate Model
 ## 10. Death Rate
 $$
-d_t =
-
-d_0
-
-\cdot (1 + \delta_{food}(1 - F_t))
-
-\cdot (1 + \delta_{env}(1 - E_t))
-
-\cdot (1 + \delta_{pol} \cdot Pollution_t)
-
-\cdot (1 + \delta_O(1 - O_t))
-$$
+d_t =d_0\cdot (1 + \delta_{food}(1 - F_t))\cdot (1 + \delta_{env}(1 - E_t))\cdot (1 + \delta_{pol} \cdot Pollution_t)\cdot (1 + \delta_O(1 - O_t))$$
 
 
 | Symbol          | Description                      | Type       |
@@ -178,22 +152,7 @@ ___
 # 5️⃣ Ocean System
 ## 11. Ocean Health Update
 $$
-O_{t+1} =
-
-\text{clip}_{[0,1]}\Big(
-
-O_t
-
-+ r_O O_t(1 - O_t)
-
-- \alpha_C \cdot OilUse_t(1 - O_t)
-
-- \alpha_R \cdot Deforestation_t
-
-- \alpha_P \cdot OilProduction_t
-
-\Big)
-$$
+O_{t+1} =\text{clip}_{[0,1]}\Big(O_t+ r_O O_t(1 - O_t)- \alpha_C \cdot OilUse_t(1 - O_t)- \alpha_R \cdot Deforestation_t- \alpha_P \cdot OilProduction_t\Big)$$
 
 | Symbol            | Description                        | Type       |
 | ----------------- | ---------------------------------- | ---------- |
