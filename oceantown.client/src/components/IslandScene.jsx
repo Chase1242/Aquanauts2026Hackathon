@@ -56,8 +56,7 @@ function generateOccupiedSpots({ buildingCount, treeCount }) {
     return occupied;
 }
 
-function IslandScene({ ecosystem, population, onAllGone }) {
-    // choose how many you want overall
+function IslandScene({ ecosystem, population, onAllGone, children }) {    // choose how many you want overall
     const buildingCount = 7; // or compute from ecosystem like before
     const treeCount = 28;
 
@@ -73,16 +72,21 @@ function IslandScene({ ecosystem, population, onAllGone }) {
     return (
         <div className="scene">
             <Ocean ecosystem={ecosystem} />
+            <div className="islandBackgroundFade" />
+            <div className="islandBackgroundFade" />
 
             <div className="island-container">
                 <img src="/island.png" alt="island" className="island-image" />
 
                 <div className="island-mask">
                     <Trees ecosystem={ecosystem} positions={treeSpots} />
-                    <Buildings ecosystem={ecosystem} positions={buildingSpots} />
+                    <Buildings ecosystem={ecosystem} positions={buildingSpots} population={population}
+ />
                     <People population={population} onAllGone={onAllGone} />
                 </div>
+
             </div>
+            {children}
         </div>
     );
 }
