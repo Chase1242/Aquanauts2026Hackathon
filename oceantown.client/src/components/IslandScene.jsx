@@ -81,7 +81,7 @@ function IslandScene({ ecosystem, population, onAllGone, children }) {    // cho
                 <div className="island-mask">
                     <Trees ecosystem={ecosystem} positions={treeSpots} />
                     <Buildings ecosystem={ecosystem} positions={buildingSpots} population={population}
- />
+                    />
                     <People population={population} onAllGone={onAllGone} />
                 </div>
 
