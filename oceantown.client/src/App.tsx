@@ -1,4 +1,5 @@
 import TitleScreen from "./TitleScreen";
+import { getSimulationForUser } from './oceanTownApi';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
@@ -15,12 +16,6 @@ import VILLAGER_3 from './assets/villager3.png';
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH"];
 const SCENARIOS_PER_MONTH = 3;
 export default function App() {
-    const [gameStarted, setGameStarted] = useState(false);
-    const [gameState, setGameState] = useState({
-        ecosystem: 80,
-        population: 300,
-        happiness: 70
-    });
     // Handles Dialog Appearing
     const [showButtons, setShowButtons] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
@@ -33,11 +28,69 @@ export default function App() {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
 
-    const [stats, setStats] = useState({
-        happiness: 75,
-        population: 420,
-        ecosystem: 60
+    const [simState, setSimState] = useState<any>(null);
+
+    const [gameStarted, setGameStarted] = useState(false);
+    const [gameState, setGameState] = useState({
+        ecosystem: 80,
+        population: 300,
+        happiness: 70
     });
+
+    // StatItem mapping logic
+    // Use simState.State.GlobalVariables for StatItems
+    const globals = simState && simState.state && simState.state.globalVariables ? simState.state.globalVariables : {};
+
+    // Debug output to verify structure
+    console.log('GameScreen simState:', simState);
+    console.log('GameScreen globals:', globals);
+    // Friendly names for global variables
+    const friendlyNames: { [key: string]: string } = {
+        H: "Happiness",
+        P: "Population",
+        AirQ: "Air Quality",
+        OceanQ: "Ocean Quality",
+        TotForest: "% forest remaining",
+        OilTot: "Oil Production"
+    };
+
+    console.log(friendlyNames);
+    // Icons for global variables
+    const statIcons: { [key: string]: React.ReactNode } = {
+        H: <Smile className="w-4 h-4" />,
+        P: <Calendar className="w-4 h-4" />,
+        AirQ: <Bot className="w-4 h-4" />,
+        OceanQ: <Smile className="w-4 h-4" />,
+        TotForest: <CheckCircle2 className="w-4 h-4" />,
+        OilTot: <XCircle className="w-4 h-4" />
+    };
+    // Colors for progress bars
+    const statColors: { [key: string]: string } = {
+        H: "bg-green-400",
+        P: "bg-blue-400",
+        AirQ: "bg-yellow-400",
+        OceanQ: "bg-cyan-400",
+        TotForest: "bg-green-700",
+        OilTot: "bg-orange-400"
+    };
+    // Text colors
+    const statTextColors: { [key: string]: string } = {
+        H: "text-green-600",
+        P: "text-blue-600",
+        AirQ: "text-yellow-600",
+        OceanQ: "text-cyan-600",
+        TotForest: "text-green-700",
+        OilTot: "text-orange-600"
+    };
+    // Progress calculation
+    const statProgress: { [key: string]: (value: any) => number } = {
+        H: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        P: v => Math.max(0, Math.min(100, Number(v) / 10)),
+        AirQ: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        OceanQ: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        TotForest: v => Math.max(0, Math.min(100, Number(v))),
+        OilTot: v => Math.max(0, Math.min(100, Number(v)))
+    };
 
     const CHARACTER_MAP: Record<string, string> = {
         'amazon_warehouse': VILLAGER_2,
@@ -142,13 +195,27 @@ export default function App() {
         }, 800);
     };
 
+    // Handler to start game and fetch simulation project
+    const handleStartGame = async () => {
+        const sim = await getSimulationForUser(2, "chase.conaway"); // Replace 2 with your projectId if needed
+        setSimState(sim);
+        setGameStarted(true);
+        setStats({ happiness: simState.state.globalVariables.H || 70, population: simState.state.globalVariables.P || 420, ecosystem: simState.state.globalVariables.E || 60 });
+    };
+
+    const [stats, setStats] = useState({
+        happiness: 70,
+        population:420,
+        ecosystem: 60
+    });
+
     return (
         <div className="w-full h-screen bg-slate-900 overflow-hidden selection:bg-cyan-500/30">
             <AnimatePresence mode="wait">
                 {/* 1. Title Screen */}
                 {!gameStarted && (
                     <motion.div key="title" exit={{ opacity: 0, filter: "blur(20px)" }} className="w-full h-full">
-                        <TitleScreen onStartGame={() => setGameStarted(true)} />
+                        <TitleScreen onStartGame={handleStartGame} />
                     </motion.div>
                 )}
 
@@ -235,30 +302,25 @@ export default function App() {
                                 <h3 className="text-xs font-bold tracking-widest text-slate-400 uppercase">Vital Signs</h3>
                             </div>
                             <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-                                <StatItem
-                                    icon={<Smile className="w-4 h-4" />}
-                                    label="Happiness"
-                                    value={`${stats.happiness}%`}
-                                    progress={stats.happiness}
-                                    color="bg-emerald-500"
-                                    textColor="text-emerald-600"
-                                />
-                                <StatItem
-                                    icon={<Users className="w-4 h-4" />}
-                                    label="Population"
-                                    value={stats.population.toString()}
-                                    progress={Math.min((stats.population / 1000) * 100, 100)}
-                                    color="bg-primary"
-                                    textColor="text-primary"
-                                />
-                                <StatItem
-                                    icon={<TreePine className="w-4 h-4" />}
-                                    label="Ecosystem"
-                                    value={`${stats.ecosystem}%`}
-                                    progress={stats.ecosystem}
-                                    color="bg-green-500"
-                                    textColor="text-green-600"
-                                />
+                                {Object.keys(globals).length > 0 ? (
+                                    Object.entries(globals)
+                                        .filter(([key]) => key !== 'rP' && key !== 'AvgForest')
+                                        .map(([key, value], idx) => (
+                                            <StatItem
+                                                key={key}
+                                                icon={statIcons[key] || <Smile className="w-4 h-4" />}
+                                                label={friendlyNames[key] || key}
+                                                value={typeof value === 'number' ? value.toLocaleString() : String(value)}
+                                                description={undefined}
+                                                progress={statProgress[key] ? statProgress[key](value) : 100}
+                                                color={statColors[key] || 'bg-gray-400'}
+                                                textColor={statTextColors[key] || 'text-gray-600'}
+                                                delay={idx * 0.1}
+                                            />
+                                        ))
+                                ) : (
+                                    <div className="text-slate-500 text-sm">No global stats found. Check API response structure.</div>
+                                )}
                             </div>
                         </aside>
 
@@ -392,57 +454,59 @@ interface DialogueData {
 function DialogueTypewriter({ data, startPlaying, onComplete }: { data: DialogueData, startPlaying: boolean, onComplete: () => void }) {
     const [visibleChars, setVisibleChars] = useState("");
 
-function DialogueTypewriter({ data }: { data: DialogueData }) {
-    const [visibleChars, setVisibleChars] = useState<string>("");
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-    const hasStarted = useRef(false); // <--- Add this ref
+    function DialogueTypewriter({ data }: { data: DialogueData }) {
+        const [visibleChars, setVisibleChars] = useState<string>("");
+        const audioRef = useRef<HTMLAudioElement | null>(null);
+        const hasStarted = useRef(false); // <--- Add this ref
 
-    useEffect(() => {
-        // Only start if startPlaying is true AND we haven't started yet for this 'data'
-        if (!startPlaying || hasStarted.current) return;
+        useEffect(() => {
+            // Only start if startPlaying is true AND we haven't started yet for this 'data'
+            if (!startPlaying || hasStarted.current) return;
 
-        const audio = new Audio(data.audioUrl);
-        audioRef.current = audio;
-        hasStarted.current = true; // Mark as started
+            const audio = new Audio(data.audioUrl);
+            audioRef.current = audio;
+            hasStarted.current = true; // Mark as started
 
-        audio.onended = () => {
-            setTimeout(onComplete, 500);
-        };
+            audio.onended = () => {
+                setTimeout(onComplete, 500);
+            };
 
-        const updateText = () => {
-            const currentTime = audio.currentTime;
-            const { characters, character_start_times_seconds } = data.alignment;
-            let currentText = "";
-            for (let i = 0; i < character_start_times_seconds.length; i++) {
-                if (character_start_times_seconds[i] <= currentTime) {
-                    currentText += characters[i];
-                } else { break; }
-            }
-            setVisibleChars(currentText);
-            if (!audio.paused && !audio.ended) requestAnimationFrame(updateText);
-        };
+            const updateText = () => {
+                const currentTime = audio.currentTime;
+                const { characters, character_start_times_seconds } = data.alignment;
+                let currentText = "";
+                for (let i = 0; i < character_start_times_seconds.length; i++) {
+                    if (character_start_times_seconds[i] <= currentTime) {
+                        currentText += characters[i];
+                    } else { break; }
+                }
+                setVisibleChars(currentText);
+                if (!audio.paused && !audio.ended) requestAnimationFrame(updateText);
+            };
 
-        audio.play().catch(e => console.error(e));
-        const animId = requestAnimationFrame(updateText);
+            audio.play().catch(e => console.error(e));
+            const animId = requestAnimationFrame(updateText);
 
-        return () => {
-            audio.pause();
-            cancelAnimationFrame(animId);
-            // We don't reset hasStarted here because the 'key' on the 
-            // component will handle the reset when the scenario changes.
-        };
-    }, [data, startPlaying, onComplete]);
+            return () => {
+                audio.pause();
+                cancelAnimationFrame(animId);
+                // We don't reset hasStarted here because the 'key' on the 
+                // component will handle the reset when the scenario changes.
+            };
+        }, [data, startPlaying, onComplete]);
 
-    return (
-        <p className="text-slate-600 text-sm leading-relaxed font-medium">
-            {visibleChars}
-            {/* Show cursor only while playing */}
-            {(!audioRef.current?.ended && hasStarted.current) && (
-                <motion.span
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ repeat: Infinity, duration: 0.8 }}
-                    className="inline-block w-1.5 h-4 ml-1 bg-primary align-middle"
-                />
-}        ]
+        return (
+            <p className="text-slate-600 text-sm leading-relaxed font-medium">
+                {visibleChars}
+                {/* Show cursor only while playing */}
+                {(!audioRef.current?.ended && hasStarted.current) && (
+                    <motion.span
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
+                        className="inline-block w-1.5 h-4 ml-1 bg-primary align-middle"
+                    />
+                )}
+            </p>
+        );
     }
 }

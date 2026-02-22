@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getSimulationForUser } from './oceanTownApi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Waves, Leaf, Users, Zap, Play, Settings, HelpCircle, FolderOpen } from 'lucide-react';
+import { Waves, Leaf, Users, Zap, Play, Info, Settings, HelpCircle, FolderOpen } from 'lucide-react';
 import MAIN_MENU_BG from './assets/MainMenuBG.jpg';
 
 interface TitleScreenProps {
@@ -108,7 +108,6 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                             onClick={onStartGame}
                         />
 
-                        {/* Removed Load Game Button */}
 
                         <MenuButton
                             icon={<Info className="w-5 h-5" />}
