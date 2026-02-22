@@ -18,6 +18,13 @@ public class UserAccountRepository : IUserAccountRepository
         return await this._context.UserAccounts.FindAsync(id);
     }
 
+    public async Task<UserAccount?> GetByUsernameAsync(string username)
+    {
+        return await this._context.UserAccounts
+            .Include(ua => ua.GameSaves.Where(gs => !gs.IsDeleted))
+            .FirstOrDefaultAsync(u => u.Username == username);
+    }
+
     public async Task<IEnumerable<UserAccount>> GetAllAsync()
     {
         return await this._context.UserAccounts.ToListAsync();

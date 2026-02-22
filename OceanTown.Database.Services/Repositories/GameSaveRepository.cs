@@ -109,6 +109,7 @@ public class GameSaveRepository : IGameSaveRepository
         double initialPopulation,
         double initialOceanQ = 1.0,
         double initialAirQ = 1.0,
+        double initialH = 1.0,
         double? populationGrowthRate = null,
         string? engineVersion = null)
     {
@@ -127,7 +128,8 @@ public class GameSaveRepository : IGameSaveRepository
             {
                 ["P"] = initialPopulation,
                 ["OceanQ"] = initialOceanQ,
-                ["AirQ"] = initialAirQ
+                ["AirQ"] = initialAirQ,
+                ["H"] = initialH,
             }
         };
 

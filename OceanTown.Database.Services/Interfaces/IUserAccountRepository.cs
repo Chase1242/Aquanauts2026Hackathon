@@ -5,6 +5,7 @@ namespace OceanTown.Database.Services.Interfaces;
 public interface IUserAccountRepository
 {
     Task<UserAccount?> GetByIdAsync(int id);
+    Task<UserAccount?> GetByUsernameAsync(string username);
     Task<IEnumerable<UserAccount>> GetAllAsync();
     Task<UserAccount> AddAsync(UserAccount entity);
     Task UpdateAsync(UserAccount entity);

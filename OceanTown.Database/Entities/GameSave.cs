@@ -1,4 +1,6 @@
-﻿namespace OceanTown.Database.Entities;
+﻿using System.Text.Json.Serialization;
+
+namespace OceanTown.Database.Entities;
 
 public partial class GameSave
 {
@@ -22,5 +24,6 @@ public partial class GameSave
 
     public virtual SimulationProject? SimulationProject { get; set; }
 
+    [JsonIgnore]
     public virtual UserAccount UserAccount { get; set; } = null!;
 }
