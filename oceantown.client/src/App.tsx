@@ -8,6 +8,10 @@ import { scenarios } from './services/scenarioEngine';
 import { applyScenario } from './services/gameEngine';
 import { DIALOGUE_SESSIONS, DialogueData } from './audioData';
 
+import VILLAGER_1 from './assets/villager1.png';
+import VILLAGER_2 from './assets/villager2.png';
+import VILLAGER_3 from './assets/villager3.png';
+
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH"];
 const SCENARIOS_PER_MONTH = 3;
 export default function App() {
@@ -34,6 +38,18 @@ export default function App() {
         population: 420,
         ecosystem: 60
     });
+
+    const CHARACTER_MAP: Record<string, string> = {
+        'amazon_warehouse': VILLAGER_2,
+        'coal_plant': VILLAGER_1,
+        'solar_farm': VILLAGER_3,
+        'fishing_expansion': VILLAGER_2,
+        'wildlife_reserve': VILLAGER_2,
+        'luxury_resort': VILLAGER_3,
+        'plastic_factory': VILLAGER_1,
+        'reforestation': VILLAGER_1,
+        'oil_drilling': VILLAGER_2
+    };
 
     const [currentScenario, setCurrentScenario] = useState(scenarios[0]);
 
@@ -251,12 +267,27 @@ export default function App() {
                             <motion.div
                                 animate={{ y: showAlert ? 0 : 250, opacity: showAlert ? 1 : 0 }}
                                 onAnimationComplete={() => { if (showAlert) setIsAnimationComplete(true); }}
-                                className="w-full max-w-2xl glass-panel rounded-xl shadow-xl border border-white pointer-events-auto bg-white/95"
+                                className="w-full max-w-2xl glass-panel rounded-xl shadow-xl border border-white pointer-events-auto bg-white/95 overflow-hidden"
                             >
                                 <div className="flex flex-col md:flex-row">
-                                    <div className="hidden md:flex flex-col items-center justify-center p-6 bg-slate-50 w-32 border-r border-slate-100">
-                                        <Bot className={`w-6 h-6 text-primary ${isAnimationComplete ? 'animate-pulse' : ''}`} />
+                                    <div className="hidden md:flex flex-col items-center justify-center bg-slate-100 w-32 border-r border-slate-200 overflow-hidden relative">
+                                        <AnimatePresence mode="wait">
+                                            <motion.img
+                                                key={currentScenario.id}
+                                                initial={{ opacity: 0, scale: 1.1 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                src={CHARACTER_MAP[currentScenario.id] || VILLAGER_1} // Fallback to villager 1
+                                                alt="Villager"
+                                                className={`w-full h-full object-cover ${isAnimationComplete ? 'brightness-100' : 'brightness-75'}`}
+                                            />
+                                        </AnimatePresence>
+                                        {/* Optional: Small pulse indicator to show they are "talking" */}
+                                        {!showButtons && isAnimationComplete && (
+                                            <div className="absolute bottom-2 right-2 w-3 h-3 bg-primary rounded-full animate-ping" />
+                                        )}
                                     </div>
+
                                     <div className="flex-1 p-5 flex flex-col gap-4">
                                         <div>
                                             <h4 className="text-slate-800 text-base font-bold mb-1">{currentScenario.title}</h4>
