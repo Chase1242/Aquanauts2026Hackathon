@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import IslandScene from "./components/IslandScene";
-import DecisionModal from "./components/DecisionModal";
 import { applyScenario } from "./services/gameEngine";
 import { scenarios } from "./services/scenarioEngine";
 import { getCitizenDialogue } from "./services/geminiService";
@@ -18,7 +16,6 @@ type CitizenReaction = {
     tone?: string;
 };
 
-// keep it typed without `any`
 type Scenario = {
     id: string;
     title: string;
@@ -26,7 +23,7 @@ type Scenario = {
     [key: string]: unknown;
 };
 
-function getRandomScenario(state: GameState) {
+function getRandomScenario(state: GameState): Scenario {
     const all = scenarios as unknown as Scenario[];
 
     if (state.ecosystem < 40) {
@@ -42,10 +39,9 @@ function getRandomScenario(state: GameState) {
     return all[Math.floor(Math.random() * all.length)];
 }
 
-export default function IslandGame({ state, setState }) {
-    
+export default function IslandGame({ state, setState }: { state: GameState, setState: (s: GameState) => void }) {
 
-    // ✅ lazy initializer fixes "Math.random is impure during render"
+    // Initialize the first scenario
     const [currentScenario, setCurrentScenario] = useState<Scenario>(() => {
         const all = scenarios as unknown as Scenario[];
         return all[Math.floor(Math.random() * all.length)];
@@ -56,66 +52,53 @@ export default function IslandGame({ state, setState }) {
     const [selectedCitizen, setSelectedCitizen] = useState<number | null>(null);
     const [bubbleVisible, setBubbleVisible] = useState(false);
 
-    // ✅ block popup overlay for now (replaces `false && ...` ESLint error)
-    const showReaction = false;
-
     async function handleDecision(choice: "YES" | "NO") {
         const updated = applyScenario(state, currentScenario, choice) as GameState;
 
+        // Constraint clamping
         updated.ecosystem = Math.min(updated.ecosystem, 100);
         updated.population = Math.min(updated.population, 300);
         updated.happiness = Math.min(updated.happiness, 100);
 
         setState(updated);
-
         setLoadingAI(true);
         setBubbleVisible(false);
         setCitizenReaction(null);
 
+        // Fetch AI Dialogue based on decision
         const aiResponse = await getCitizenDialogue(updated, currentScenario.title, choice);
 
         setCitizenReaction(aiResponse);
         setLoadingAI(false);
 
+        // Calculate which citizen "speaks"
         const visibleCount = Math.max(0, Math.floor((updated.population / 300) * 16));
-        const randomIndex =
-            visibleCount > 0 ? Math.floor(Math.random() * visibleCount) : null;
+        const randomIndex = visibleCount > 0 ? Math.floor(Math.random() * visibleCount) : null;
 
         setSelectedCitizen(randomIndex);
         setBubbleVisible(visibleCount > 0);
 
-        setCurrentScenario(getRandomScenario(updated) as Scenario);
-    }
-
-    function closeReaction() {
-        setCitizenReaction(null);
-        setBubbleVisible(false);
-        setSelectedCitizen(null);
+        // Set the next scenario
+        setCurrentScenario(getRandomScenario(updated));
     }
 
     return (
-        <div>
-            <h1>Island Balance Simulator</h1>
+        <div className="game-container w-full h-full relative">
+            <div className="absolute inset-0 flex items-center justify-center pt-32">
+                <IslandScene
+                    ecosystem={state.ecosystem}
+                    population={state.population}
+                    frozen={loadingAI || !!citizenReaction}
+                    selectedCitizen={selectedCitizen}
+                    bubbleVisible={bubbleVisible}
+                />
+            </div>
 
-            <IslandScene
-                ecosystem={state.ecosystem}
-                population={state.population}
-                frozen={loadingAI || !!citizenReaction}
-                selectedCitizen={selectedCitizen}
-                bubbleVisible={bubbleVisible}
-            />
-
-            <DecisionModal
-                eventText={`${currentScenario.title} ${currentScenario.description}`}
-                onYes={() => handleDecision("YES")}
-                onNo={() => handleDecision("NO")}
-            />
-
-            {showReaction && citizenReaction && (
-                <div className="speechOverlay">
+            {citizenReaction && (
+                <div className="speechOverlay" onClick={() => setCitizenReaction(null)}>
                     <div className="speechBox">
-                        <p>{citizenReaction.citizen}</p>
-                        <button onClick={closeReaction}>Close</button>
+                        <p>"{citizenReaction.citizen}"</p>
+                        <small>Click to continue</small>
                     </div>
                 </div>
             )}
