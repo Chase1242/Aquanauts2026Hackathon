@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
 
+const ISLAND_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCyXxxa4xWXA5u2g-1o3sK0NlfoYdoABqFX1kkFbB1_SAwtCnc9ZxRXBuz6XV3t2rVqWtUTbmBUv4_R20Mqa2Q5yl4SpWO3rKdt0G0YeUCWiDfx0tZ-DG99-vi0CzgheX5Is3OmWrciNMQrozCLCoiz8byNYXiwWB-G9dgc5uPTPA8M0GTlZ5QNgLACKwLnD0mKu2gKXXRGwShxBMwf6k-9xm51GwEbGnvN3phcwj-mWTWDlpotRRzigLf9gaOxqHPfmqUwQoi6Rs0';
+
 export default function App() {
     return (
         <div className="relative flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background-light">
@@ -10,6 +12,30 @@ export default function App() {
                 <div className="absolute inset-0 wave-lines opacity-30 pointer-events-none" />
 
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                    {/* Background Island Image */}
+                    <motion.div
+                        initial={{ scale: 1.1, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 0.4 }}
+                        transition={{ duration: 1.5 }}
+                        className="absolute inset-0 bg-cover bg-center mix-blend-overlay transition-transform duration-[20s] ease-in-out group-hover:scale-105"
+                        style={{
+                            backgroundImage: `url('${ISLAND_IMAGE}')`,
+                            filter: 'contrast(1.2) brightness(1.2)'
+                        }}
+                    />
+
+                    {/* Masked Island Image for Focus */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-in-out group-hover:scale-105"
+                        style={{
+                            backgroundImage: `url('${ISLAND_IMAGE}')`,
+                            maskImage: 'radial-gradient(circle, black 30%, transparent 70%)',
+                            WebkitMaskImage: 'radial-gradient(circle, black 30%, transparent 70%)'
+                        }}
+                    />
 
                     {/* Season Indicator */}
                     <motion.div
@@ -23,6 +49,15 @@ export default function App() {
                             Saturday
                         </div>
                     </motion.div>
+
+                    {/* Map Marker */}
+                    <div className="absolute top-[40%] left-[60%] group/marker cursor-pointer z-10">
+                        <div className="w-4 h-4 rounded-full bg-white/40 border border-white animate-ping absolute inset-0" />
+                        <div className="w-4 h-4 rounded-full bg-white relative shadow-[0_0_15px_rgba(255,255,255,0.8)] group-hover/marker:scale-125 transition-transform border-2 border-primary" />
+                        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap bg-white text-slate-700 font-semibold text-xs px-3 py-1.5 rounded-lg shadow-lg">
+                            Sector 4: Overgrowth
+                        </div>
+                    </div>
                 </div>
             </main>
 
