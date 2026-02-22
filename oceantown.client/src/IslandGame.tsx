@@ -42,12 +42,8 @@ function getRandomScenario(state: GameState) {
     return all[Math.floor(Math.random() * all.length)];
 }
 
-export default function IslandGame() {
-    const [state, setState] = useState<GameState>({
-        ecosystem: 80,
-        population: 300,
-        happiness: 70,
-    });
+export default function IslandGame({ state, setState }) {
+    
 
     // ✅ lazy initializer fixes "Math.random is impure during render"
     const [currentScenario, setCurrentScenario] = useState<Scenario>(() => {

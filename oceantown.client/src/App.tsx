@@ -8,7 +8,11 @@ import IslandGame from "./IslandGame";
 
 export default function App() {
     const [gameStarted, setGameStarted] = useState(false);
-
+    const [gameState, setGameState] = useState({
+        ecosystem: 80,
+        population: 300,
+        happiness: 70
+    });
     // Handles Dialog Appearing
     const [showAlert, setShowAlert] = useState(false);
 
@@ -63,8 +67,10 @@ export default function App() {
                     >
                         {/* Simulation Map Area */}
                         <main className="relative flex-1 h-full overflow-hidden">
-                            <IslandGame />
-
+                                <IslandGame
+                                    state={gameState}
+                                    setState={setGameState}
+                                />
                             {/* Season Indicator Overlay */}
                             <motion.div
                                 initial={{ x: -20, opacity: 0 }}
@@ -92,18 +98,18 @@ export default function App() {
                                     <StatItem
                                         icon={<Smile className="w-4 h-4" />}
                                         label="Happiness"
-                                        value="75%"
+                                            value={`${gameState.happiness}%`}
                                         description="Citizens remain content, though recreational zones are limited."
-                                        progress={75}
+                                            progress={gameState.happiness}
                                         color="bg-emerald-500"
                                         textColor="text-emerald-600"
                                     />
                                     <StatItem
                                         icon={<Users className="w-4 h-4" />}
                                         label="Population"
-                                        value="420"
+                                            value={gameState.population.toString()}
                                         description="Steady growth. Housing capacity at 60%."
-                                        progress={45}
+                                            progress={(gameState.population / 300) * 100}
                                         color="bg-primary"
                                         textColor="text-primary"
                                         delay={0.1}
@@ -111,9 +117,9 @@ export default function App() {
                                     <StatItem
                                         icon={<TreePine className="w-4 h-4" />}
                                         label="Flora Density"
-                                        value="1,200"
+                                            value={`${Math.round(gameState.ecosystem * 12)}`}
                                         description="Healthy CO2 absorption levels."
-                                        progress={60}
+                                            progress={gameState.ecosystem}
                                         color="bg-green-500"
                                         textColor="text-green-600"
                                         delay={0.2}
@@ -121,10 +127,9 @@ export default function App() {
                                     <StatItem
                                         icon={<Droplets className="w-4 h-4" />}
                                         label="Water Purity"
-                                        value="98%"
+                                            value={`${gameState.ecosystem}%`}
                                         description="Desalination plants operating at peak efficiency."
-                                        progress={98}
-                                        color="bg-blue-400"
+                                            progress={gameState.ecosystem}                                        color="bg-blue-400"
                                         textColor="text-blue-500"
                                         delay={0.3}
                                     />
