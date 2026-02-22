@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import TitleScreen from './TitleScreen';
-import {
-    Smile, Users, TreePine, Droplets, Calendar,
-    Bot, CheckCircle2, XCircle
-} from 'lucide-react';
+import { Smile, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
 import ISLAND_IMAGE from './assets/ocean.jpg';
 
 interface StatItemProps {
@@ -622,28 +619,80 @@ const mockData: DialogueData = {
         ]
     }
 }
-function GameScreen() {
+function GameScreen({ simState }: { simState: any }) {
+
     // Handles Dialog Appearing
     const [showAlert, setShowAlert] = useState(false);
-
     // Holds the audio data from Elevenlabs
     const [dialogueData, setDialogueData] = useState<DialogueData | null>(null);
-
     // Tracks when the dialogue box animation completes
     const [isAnimationComplete, setIsAnimationComplete] = useState(false);
-
     // Plays the audio data from Elevenlabs after animation completes
     useEffect(() => {
         if (showAlert && isAnimationComplete && !dialogueData) {
             setDialogueData(mockData);
         }
     }, [showAlert, isAnimationComplete, dialogueData]);
-
     // Handles ignore button animation
     const handleDismiss = () => {
         setShowAlert(false);
         setDialogueData(null); // Clear the data so the next alert works
         setIsAnimationComplete(false); // Reset animation state
+    };
+
+    // StatItem mapping logic
+    // Use simState.State.GlobalVariables for StatItems
+    const globals = simState && simState.state && simState.state.globalVariables ? simState.state.globalVariables : {};
+
+    // Debug output to verify structure
+    console.log('GameScreen simState:', simState);
+    console.log('GameScreen globals:', globals);
+    // Friendly names for global variables
+    const friendlyNames: { [key: string]: string } = {
+        H: "Happiness",
+        P: "Population",
+        AirQ: "Air Quality",
+        OceanQ: "Ocean Quality",
+        TotForest: "% forest remaining",
+        OilTot: "Oil Production"
+    };
+
+    console.log(friendlyNames);
+    // Icons for global variables
+    const statIcons: { [key: string]: React.ReactNode } = {
+        H: <Smile className="w-4 h-4" />,
+        P: <Calendar className="w-4 h-4" />,
+        AirQ: <Bot className="w-4 h-4" />,
+        OceanQ: <Smile className="w-4 h-4" />,
+        TotForest: <CheckCircle2 className="w-4 h-4" />,
+        OilTot: <XCircle className="w-4 h-4" />
+    };
+    // Colors for progress bars
+    const statColors: { [key: string]: string } = {
+        H: "bg-green-400",
+        P: "bg-blue-400",
+        AirQ: "bg-yellow-400",
+        OceanQ: "bg-cyan-400",
+        TotForest: "bg-green-700",
+        OilTot: "bg-orange-400"
+    };
+    // Text colors
+    const statTextColors: { [key: string]: string } = {
+        H: "text-green-600",
+        P: "text-blue-600",
+        AirQ: "text-yellow-600",
+        OceanQ: "text-cyan-600",
+        TotForest: "text-green-700",
+        OilTot: "text-orange-600"
+    };
+    // Progress calculation
+    const statProgress: { [key: string]: (value: any) => number } = {
+        H: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        P: v => Math.max(0, Math.min(100, Number(v) / 10)),
+        AirQ: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        OceanQ: v => Math.max(0, Math.min(100, Number(v) * 100)),
+        TotForest: v => Math.max(0, Math.min(100, Number(v))),
+        OilTot: v => Math.max(0, Math.min(100, Number(v)))
     };
 
     return (
@@ -714,83 +763,25 @@ function GameScreen() {
                 <div className="relative flex-1 overflow-hidden group/scroll">
                     {/* The Scrollable Container */}
                     <div className="h-full overflow-y-auto p-6 space-y-8 scroll-smooth scrollbar-hide">
-
-                        <StatItem
-                            icon={<Smile className="w-4 h-4" />}
-                            label="Happiness"
-                            value="75%"
-                            description="Citizens remain content, though recreational zones are limited."
-                            progress={75}
-                            color="bg-emerald-500"
-                            textColor="text-emerald-600"
-                        />
-
-                        <StatItem
-                            icon={<Users className="w-4 h-4" />}
-                            label="Population"
-                            value="420"
-                            description="Steady growth. Housing capacity at 60%."
-                            progress={45}
-                            color="bg-primary"
-                            textColor="text-primary"
-                            delay={0.1}
-                        />
-
-                        <StatItem
-                            icon={<TreePine className="w-4 h-4" />}
-                            label="Flora Density"
-                            value="1,200"
-                            description="Healthy CO2 absorption levels. Watch for overgrowth."
-                            progress={60}
-                            color="bg-green-500"
-                            textColor="text-green-600"
-                            delay={0.2}
-                        />
-
-                        <StatItem
-                            icon={<Droplets className="w-4 h-4" />}
-                            label="Water Purity"
-                            value="98%"
-                            description="Desalination plants operating at peak efficiency."
-                            progress={98}
-                            color="bg-blue-400"
-                            textColor="text-blue-500"
-                            delay={0.3}
-                        />
-
-                        <StatItem
-                            icon={<Bot className="w-4 h-4" />}
-                            label="AI Core Load"
-                            value="22%"
-                            description="Neural processing cycles are within safe margins."
-                            progress={22}
-                            color="bg-purple-500"
-                            textColor="text-purple-600"
-                            delay={0.4}
-                        />
-
-                        <StatItem
-                            icon={<TreePine className="w-4 h-4" />}
-                            label="Oxygen Levels"
-                            value="21%"
-                            description="Atmospheric mix is optimal for organic life."
-                            progress={85}
-                            color="bg-cyan-400"
-                            textColor="text-cyan-600"
-                            delay={0.5}
-                        />
-
-                        <StatItem
-                            icon={<Smile className="w-4 h-4" />}
-                            label="Biodiversity"
-                            value="High"
-                            description="12 new species identified in Sector 7."
-                            progress={90}
-                            color="bg-orange-400"
-                            textColor="text-orange-600"
-                            delay={0.6}
-                        />
-
+                        {Object.keys(globals).length > 0 ? (
+                            Object.entries(globals)
+                                .filter(([key]) => key !== 'rP' && key !== 'AvgForest')
+                                .map(([key, value], idx) => (
+                                    <StatItem
+                                        key={key}
+                                        icon={statIcons[key] || <Smile className="w-4 h-4" />}
+                                        label={friendlyNames[key] || key}
+                                        value={typeof value === 'number' ? value.toLocaleString() : String(value)}
+                                        description={undefined}
+                                        progress={statProgress[key] ? statProgress[key](value) : 100}
+                                        color={statColors[key] || 'bg-gray-400'}
+                                        textColor={statTextColors[key] || 'text-gray-600'}
+                                        delay={idx * 0.1}
+                                    />
+                                ))
+                        ) : (
+                            <div className="text-slate-500 text-sm">No global stats found. Check API response structure.</div>
+                        )}
                         {/* Spacer for bottom scroll padding */}
                         <div className="h-12" /> 
                     </div>
@@ -865,16 +856,15 @@ function GameScreen() {
 
 export default function App() {
     const [gameStarted, setGameStarted] = useState(false);
+    const [simState, setSimState] = useState<any>(null);
 
     return (
         <div className="w-full h-screen bg-slate-900">
-            {/* AnimatePresence enables the 'exit' animations */}
             <AnimatePresence mode="wait">
                 {!gameStarted ? (
                     <motion.div
                         key="title-screen"
                         initial={{ opacity: 1 }}
-                        // Cinematic exit: fades, scales up, and blurs
                         exit={{
                             opacity: 0,
                             scale: 1.1,
@@ -883,7 +873,10 @@ export default function App() {
                         }}
                         className="w-full h-full"
                     >
-                        <TitleScreen onStartGame={() => setGameStarted(true)} />
+                        <TitleScreen onStartGame={sim => {
+                            setSimState(sim);
+                            setGameStarted(true);
+                        }} />
                     </motion.div>
                 ) : (
                     <motion.div
@@ -893,7 +886,7 @@ export default function App() {
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="w-full h-full"
                     >
-                        <GameScreen />
+                        <GameScreen simState={simState} />
                     </motion.div>
                 )}
             </AnimatePresence>

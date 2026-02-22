@@ -71,7 +71,8 @@ public class GameSaveRepository : IGameSaveRepository
 
     public async Task AddAsync(GameSave entity)
     {
-        var existing = this._context.GameSaves.FirstOrDefault(e => e.UserAccountId == entity.UserAccountId);
+        var existing = this._context.GameSaves.FirstOrDefault(e => e.UserAccountId == entity.UserAccountId
+            && !e.IsDeleted);
         if (existing != null)
         {
             existing.IsDeleted = true;

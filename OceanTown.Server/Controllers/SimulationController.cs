@@ -44,7 +44,7 @@ public sealed class SimulationController : ControllerBase
     /// Load a simulation definition (variables, functions, execution plan).
     /// </summary>
     [HttpGet("{projectId:int}/{username}")]
-    [ProducesResponseType(typeof(Simulation), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(LoadResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> LoadSimulation(int projectId, string username, CancellationToken ct)
     {
         var simulation = await this._loader.LoadAsync(projectId, ct);
@@ -56,7 +56,7 @@ public sealed class SimulationController : ControllerBase
                 new("AvgForest", AggregateOp.Avg, "A"),
                 new("OilTot", AggregateOp.Sum, "OilCell"),
             });
-        return Ok(new LoadResponse { Simulation = simulation, State = state });
+        return Ok(new LoadResponse { State = state });
     }
 
     /// <summary>
@@ -109,6 +109,5 @@ public sealed class StepResponse
 
 public sealed class LoadResponse
 {
-    public Simulation Simulation { get; set; } = default!;
     public GameState State { get; set; } = default!;
 }

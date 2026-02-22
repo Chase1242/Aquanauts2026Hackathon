@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
+import { getSimulationForUser } from './oceanTownApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Waves, Leaf, Users, Zap, Play, Settings, HelpCircle, FolderOpen } from 'lucide-react';
 import MAIN_MENU_BG from './assets/MainMenuBG.jpg';
 
 interface TitleScreenProps {
-    onStartGame: () => void;
+    onStartGame: (simState: any) => void;
 }
 
 export default function TitleScreen({ onStartGame }: TitleScreenProps) {
+    const [simulation, setSimulation] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleStartGame = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const sim = await getSimulationForUser(2, 'chase.conaway');
+            setSimulation(sim);
+            onStartGame(sim);
+        } catch (e: any) {
+            setError('Failed to load simulation.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div
             className="relative w-full h-screen overflow-hidden bg-slate-900 font-sans selection:bg-cyan-500/30"
@@ -83,10 +102,11 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                     <div className="flex flex-col gap-4 w-full max-w-sm">
                         <MenuButton
                             icon={<Play className="w-5 h-5 fill-current" />}
-                            label="Start Game"
+                            label={loading ? "Loading..." : "Start Game"}
                             primary
-                            onClick={onStartGame}
+                            onClick={loading ? undefined : handleStartGame}
                         />
+                        {error && <div className="text-red-400 text-xs mt-2">{error}</div>}
                         {/* Renamed Achievements to Load Game */}
                         <MenuButton icon={<FolderOpen className="w-5 h-5" />} label="Load Game" />
                         <MenuButton icon={<Settings className="w-5 h-5" />} label="Settings" />

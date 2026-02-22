@@ -9,7 +9,21 @@ using OceanTown.Engine.Interfaces;
 using OceanTown.Server;
 using OceanTown.Server.Infrastructure;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Add CORS policy to allow requests from the client origin
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowed(origin => true); // Allow all origins for dev, restrict in prod
+    });
+});
 
 // Use the environment application name (the assembly name) rather than the one in
 // configuration since it's more likely to be safe for use in a cookie name
@@ -93,6 +107,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
