@@ -74,50 +74,98 @@ export default function App() {
                     <p className="text-sm text-slate-500">Eco-System Stability Monitor</p>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                    <StatItem
-                        icon={<Smile className="w-4 h-4" />}
-                        label="Happiness"
-                        value="75%"
-                        description="Citizens remain content, though recreational zones are limited."
-                        progress={75}
-                        color="bg-primary"
-                        textColor="text-primary"
-                    />
+                {/* SCROLL WHEEL AREA */}
+                <div className="relative flex-1 overflow-hidden group/scroll">
+                    {/* Top Fade Gradient */}
+                    <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white/90 to-transparent z-10 pointer-events-none" />
 
-                    <StatItem
-                        icon={<Users className="w-4 h-4" />}
-                        label="Population"
-                        value="420"
-                        description="Steady growth. Housing capacity at 60%."
-                        progress={45}
-                        color="bg-primary"
-                        textColor="text-primary"
-                        delay={0.1}
-                    />
+                    {/* The Scrollable Container */}
+                    <div className="h-full overflow-y-auto p-6 space-y-8 scroll-smooth scrollbar-hide 
+                                    [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]
+                                    hover:[mask-image:none] transition-all duration-500">
 
-                    <StatItem
-                        icon={<TreePine className="w-4 h-4" />}
-                        label="Flora Density"
-                        value="1,200"
-                        description="Healthy CO2 absorption levels. Watch for overgrowth."
-                        progress={60}
-                        color="bg-primary"
-                        textColor="text-primary"
-                        delay={0.2}
-                    />
+                        <StatItem
+                            icon={<Smile className="w-4 h-4" />}
+                            label="Happiness"
+                            value="75%"
+                            description="Citizens remain content, though recreational zones are limited."
+                            progress={75}
+                            color="bg-emerald-500"
+                            textColor="text-emerald-600"
+                        />
 
-                    <div className="pt-4 border-t border-slate-100">
+                        <StatItem
+                            icon={<Users className="w-4 h-4" />}
+                            label="Population"
+                            value="420"
+                            description="Steady growth. Housing capacity at 60%."
+                            progress={45}
+                            color="bg-primary"
+                            textColor="text-primary"
+                            delay={0.1}
+                        />
+
+                        <StatItem
+                            icon={<TreePine className="w-4 h-4" />}
+                            label="Flora Density"
+                            value="1,200"
+                            description="Healthy CO2 absorption levels. Watch for overgrowth."
+                            progress={60}
+                            color="bg-green-500"
+                            textColor="text-green-600"
+                            delay={0.2}
+                        />
+
                         <StatItem
                             icon={<Droplets className="w-4 h-4" />}
                             label="Water Purity"
                             value="98%"
+                            description="Desalination plants operating at peak efficiency."
                             progress={98}
                             color="bg-blue-400"
                             textColor="text-blue-500"
                             delay={0.3}
                         />
+
+                        {/* NEW STAT ITEMS */}
+                        <StatItem
+                            icon={<Bot className="w-4 h-4" />}
+                            label="AI Core Load"
+                            value="22%"
+                            description="Neural processing cycles are within safe margins."
+                            progress={22}
+                            color="bg-purple-500"
+                            textColor="text-purple-600"
+                            delay={0.4}
+                        />
+
+                        <StatItem
+                            icon={<TreePine className="w-4 h-4" />}
+                            label="Oxygen Levels"
+                            value="21%"
+                            description="Atmospheric mix is optimal for organic life."
+                            progress={85}
+                            color="bg-cyan-400"
+                            textColor="text-cyan-600"
+                            delay={0.5}
+                        />
+
+                        <StatItem
+                            icon={<Smile className="w-4 h-4" />}
+                            label="Biodiversity"
+                            value="High"
+                            description="12 new species identified in Sector 7."
+                            progress={90}
+                            color="bg-orange-400"
+                            textColor="text-orange-600"
+                            delay={0.6}
+                        />
+
+                        <div className="h-12" /> {/* Spacer for bottom scroll padding */}
                     </div>
+
+                    {/* Bottom Fade Gradient */}
+                    <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/90 to-transparent z-10 pointer-events-none" />
                 </div>
             </aside>
 
