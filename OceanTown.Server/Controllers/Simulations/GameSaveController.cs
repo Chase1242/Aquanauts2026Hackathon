@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OceanTown.Database.Entities;
 using OceanTown.Database.Services.Interfaces;
+using OceanTown.Shared;
 
 namespace OceanTown.Server.Controllers.Simulations;
 
@@ -11,47 +12,51 @@ public class GameSaveController : ControllerBase
     private readonly IGameSaveRepository _repository;
     public GameSaveController(IGameSaveRepository repository)
     {
-        _repository = repository;
+        this._repository = repository;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GameSave>>> GetAll()
     {
-        var entities = await _repository.GetAllAsync();
+        var entities = await this._repository.GetAllAsync();
         return Ok(entities);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GameSave>> GetById(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await this._repository.GetByIdAsync(id);
         if (entity == null) return NotFound();
         return Ok(entity);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<GameSave>> Create(GameSave entity)
+    [HttpPost("{projId:int}/{userId:int}")]
+    public async Task<ActionResult<GameSave>> Create(int projId, int userId, GameState entity)
     {
-        await _repository.AddAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = entity.GameSaveId }, entity);
+        await this._repository.AddAsync(entity.CreateGameSaveFromState(projId, userId));
+        GameSave? createdEntity = await this._repository.GetByIdAsync(userId);
+        return CreatedAtAction(nameof(GetById), new { id = createdEntity?.GameSaveId }, createdEntity);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, GameSave entity)
+    public async Task<IActionResult> Update(int id, GameState state)
     {
-        if (id != entity.GameSaveId) return BadRequest();
-        var existing = await _repository.GetByIdAsync(id);
-        if (existing == null) return NotFound();
-        await _repository.UpdateAsync(entity);
+
+        var entity = await this._repository.GetByIdAsync(id);
+        if (entity == null) return NotFound();
+
+        var updatedEntity = state.CreateGameSaveFromState(entity.SimulationProjectId ?? 2, entity.UserAccountId);
+        await this._repository.AddAsync(updatedEntity);
+
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var existing = await _repository.GetByIdAsync(id);
+        var existing = await this._repository.GetByIdAsync(id);
         if (existing == null) return NotFound();
-        await _repository.DeleteAsync(id);
+        await this._repository.DeleteAsync(id);
         return NoContent();
     }
 }

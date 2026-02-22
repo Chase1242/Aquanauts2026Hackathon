@@ -22,3 +22,10 @@ public sealed record Simulation(int ProjId, IDictionary<int, Variable> Vars,
 {
     public ExecutionPlan? Plan { get; set; } = null!;
 }
+
+public sealed class GameState
+{
+    public int Year { get; set; }              // e.g., 0..N
+    public IList<Dictionary<string, double>> Cells { get; set; } = new List<Dictionary<string, double>>(); // per-cell variable values (optional)
+    public Dictionary<string, double> GlobalVariables { get; set; } = new();
+}

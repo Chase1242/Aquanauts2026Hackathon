@@ -23,10 +23,11 @@ public class UserAccountRepository : IUserAccountRepository
         return await this._context.UserAccounts.ToListAsync();
     }
 
-    public async Task AddAsync(UserAccount entity)
+    public async Task<UserAccount> AddAsync(UserAccount entity)
     {
         this._context.UserAccounts.Add(entity);
         await this._context.SaveChangesAsync();
+        return entity;
     }
 
     public async Task UpdateAsync(UserAccount entity)

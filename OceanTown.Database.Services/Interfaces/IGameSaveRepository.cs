@@ -5,6 +5,7 @@ namespace OceanTown.Database.Services.Interfaces;
 public interface IGameSaveRepository
 {
     Task<GameSave?> GetByIdAsync(int id);
+    Task<GameSave?> GetByUsernameAsync(string username);
     Task<IEnumerable<GameSave>> GetAllAsync();
     Task AddAsync(GameSave entity);
     Task UpdateAsync(GameSave entity);

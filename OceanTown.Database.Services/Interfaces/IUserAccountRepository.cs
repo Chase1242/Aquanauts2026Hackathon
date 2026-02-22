@@ -6,7 +6,7 @@ public interface IUserAccountRepository
 {
     Task<UserAccount?> GetByIdAsync(int id);
     Task<IEnumerable<UserAccount>> GetAllAsync();
-    Task AddAsync(UserAccount entity);
+    Task<UserAccount> AddAsync(UserAccount entity);
     Task UpdateAsync(UserAccount entity);
     Task DeleteAsync(int id);
 }
