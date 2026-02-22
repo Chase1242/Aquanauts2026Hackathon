@@ -43,20 +43,17 @@ function generatePositions(count) {
     return positions;
 }
 
-function Buildings({ ecosystem, positions = [] }) {
+function Buildings({ ecosystem, population, positions = [] }) {
+
     const buildingCount = useMemo(() => {
-        if (ecosystem > 70) return 4;
-        if (ecosystem > 55) return 5;
-        if (ecosystem > 40) return 6;
-        if (ecosystem > 25) return 7;
-        if (ecosystem > 10) return 8;
-        return 10;
-    }, [ecosystem]);
+        const ratio = population / 300;
+        return Math.max(2, Math.floor(ratio * MAX_BUILDINGS));
+    }, [population]);
 
     return (
         <>
             {positions.slice(0, buildingCount).map((pos, index) => {
-                const urbanFactor = Math.max(0, (50 - ecosystem) / 50);
+                const urbanFactor = population / 300;
                 const isSkyscraper = Math.random() < urbanFactor;
 
                 const src = isSkyscraper ? "/skyscraper.png" : "/house.png";
@@ -73,14 +70,10 @@ function Buildings({ ecosystem, positions = [] }) {
                             width: isSkyscraper ? "145px" : "90px",
                             zIndex: 150 + Math.floor(pos.top * 10),
                             transform: `
-                translate(-50%, -100%)
-                scale(${pos.scale})
-                ${isSkyscraper ? "scaleY(1.05)" : ""}
-              `,
-                            filter: `
-                drop-shadow(0px 6px 10px rgba(0,0,0,0.35))
-                brightness(${isSkyscraper ? 0.95 : 1})
-              `,
+                                translate(-50%, -100%)
+                                scale(${pos.scale})
+                            `,
+                            filter: "drop-shadow(0px 6px 10px rgba(0,0,0,0.35))",
                             opacity: 0.95,
                             transition: "all 0.8s ease"
                         }}
@@ -89,7 +82,6 @@ function Buildings({ ecosystem, positions = [] }) {
             })}
         </>
     );
-
 }
 
 export default Buildings;
