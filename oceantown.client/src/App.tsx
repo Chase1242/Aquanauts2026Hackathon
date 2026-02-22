@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from 'react'; import
+{ motion } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
 import ISLAND_IMAGE from './assets/ocean.jpg';
+import IslandGame from "./IslandGame";
 
 
 export default function App() {
@@ -31,77 +32,78 @@ export default function App() {
     return (
         <div className="relative flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background-light">
             {/* Simulation Map Area */}
-            <main className="relative flex-1 h-full ocean-bg overflow-hidden group">
-
-                {/* --- INSERTED OVERLAY START --- */}
-                {!showAlert && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md">
-                        <motion.button
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setShowAlert(true)}
-                            className="bg-primary text-white px-8 py-4 rounded-full font-bold shadow-2xl z-50 flex items-center gap-3 border border-white/20"
-                        >
-                            <Bot className="w-5 h-5" />
-                            INITIALIZE AI CORE
-                        </motion.button>
-                    </div>
-                )}
-                {/* --- INSERTED OVERLAY END --- */}
-
-                <div className="absolute inset-0 wave-lines opacity-30 pointer-events-none" />
-
-                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    {/* Background Island Image */}
-                    <motion.div
-                        initial={{ scale: 1.1, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 0.4 }}
-                        transition={{ duration: 1.5 }}
-                        className="absolute inset-0 bg-cover bg-center mix-blend-overlay transition-transform duration-[20s] ease-in-out group-hover:scale-105"
-                        style={{
-                            backgroundImage: `url('${ISLAND_IMAGE}')`,
-                            filter: 'contrast(1.2) brightness(1.2)'
-                        }}
-                    />
-
-                    {/* Masked Island Image for Focus */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-in-out group-hover:scale-105"
-                        style={{
-                            backgroundImage: `url('${ISLAND_IMAGE}')`,
-                            maskImage: 'radial-gradient(circle, black 30%, transparent 70%)',
-                            WebkitMaskImage: 'radial-gradient(circle, black 30%, transparent 70%)'
-                        }}
-                    />
-
-                    {/* Season Indicator */}
-                    <motion.div
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        className="absolute top-8 left-8 p-3 rounded-lg glass-panel flex flex-col gap-1 shadow-lg z-10"
-                    >
-                        <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Day 1</span>
-                        <div className="flex items-center gap-2 text-slate-800 font-semibold">
-                            <Calendar className="w-4 h-4 text-primary" />
-                            Monday
-                        </div>
-                    </motion.div>
-
-                    {/* Map Marker */}
-                    <div className="absolute top-[40%] left-[60%] group/marker cursor-pointer z-10">
-                        <div className="w-4 h-4 rounded-full bg-white/40 border border-white animate-ping absolute inset-0" />
-                        <div className="w-4 h-4 rounded-full bg-white relative shadow-[0_0_15px_rgba(255,255,255,0.8)] group-hover/marker:scale-125 transition-transform border-2 border-primary" />
-                        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap bg-white text-slate-700 font-semibold text-xs px-3 py-1.5 rounded-lg shadow-lg">
-                            I think this island is awesome!
-                        </div>
-                    </div>
-                </div>
+            <main className="relative flex-1 h-full overflow-hidden">
+                <IslandGame />
             </main>
+            {/*    */}{/* --- INSERTED OVERLAY START --- */}
+            {/*    {!showAlert && (*/}
+            {/*        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md">*/}
+            {/*            <motion.button*/}
+            {/*                initial={{ scale: 0.9, opacity: 0 }}*/}
+            {/*                animate={{ scale: 1, opacity: 1 }}*/}
+            {/*                whileHover={{ scale: 1.05 }}*/}
+            {/*                whileTap={{ scale: 0.95 }}*/}
+            {/*                onClick={() => setShowAlert(true)}*/}
+            {/*                className="bg-primary text-white px-8 py-4 rounded-full font-bold shadow-2xl z-50 flex items-center gap-3 border border-white/20"*/}
+            {/*            >*/}
+            {/*                <Bot className="w-5 h-5" />*/}
+            {/*                INITIALIZE AI CORE*/}
+            {/*            </motion.button>*/}
+            {/*        </div>*/}
+            {/*    )}*/}
+            {/*    */}{/* --- INSERTED OVERLAY END --- */}
+
+            {/*    <div className="absolute inset-0 wave-lines opacity-30 pointer-events-none" />*/}
+
+            {/*    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">*/}
+            {/*        */}{/* Background Island Image */}
+            {/*        <motion.div*/}
+            {/*            initial={{ scale: 1.1, opacity: 0 }}*/}
+            {/*            animate={{ scale: 1, opacity: 0.4 }}*/}
+            {/*            transition={{ duration: 1.5 }}*/}
+            {/*            className="absolute inset-0 bg-cover bg-center mix-blend-overlay transition-transform duration-[20s] ease-in-out group-hover:scale-105"*/}
+            {/*            style={{*/}
+            {/*                backgroundImage: `url('${ISLAND_IMAGE}')`,*/}
+            {/*                filter: 'contrast(1.2) brightness(1.2)'*/}
+            {/*            }}*/}
+            {/*        />*/}
+
+            {/*        */}{/* Masked Island Image for Focus */}
+            {/*        <motion.div*/}
+            {/*            initial={{ opacity: 0 }}*/}
+            {/*            animate={{ opacity: 1 }}*/}
+            {/*            transition={{ duration: 1, delay: 0.5 }}*/}
+            {/*            className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-in-out group-hover:scale-105"*/}
+            {/*            style={{*/}
+            {/*                backgroundImage: `url('${ISLAND_IMAGE}')`,*/}
+            {/*                maskImage: 'radial-gradient(circle, black 30%, transparent 70%)',*/}
+            {/*                WebkitMaskImage: 'radial-gradient(circle, black 30%, transparent 70%)'*/}
+            {/*            }}*/}
+            {/*        />*/}
+
+            {/*        */}{/* Season Indicator */}
+            {/*        <motion.div*/}
+            {/*            initial={{ x: -20, opacity: 0 }}*/}
+            {/*            animate={{ x: 0, opacity: 1 }}*/}
+            {/*            className="absolute top-8 left-8 p-3 rounded-lg glass-panel flex flex-col gap-1 shadow-lg z-10"*/}
+            {/*        >*/}
+            {/*            <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Day 1</span>*/}
+            {/*            <div className="flex items-center gap-2 text-slate-800 font-semibold">*/}
+            {/*                <Calendar className="w-4 h-4 text-primary" />*/}
+            {/*                Monday*/}
+            {/*            </div>*/}
+            {/*        </motion.div>*/}
+
+            {/*        */}{/* Map Marker */}
+            {/*        <div className="absolute top-[40%] left-[60%] group/marker cursor-pointer z-10">*/}
+            {/*            <div className="w-4 h-4 rounded-full bg-white/40 border border-white animate-ping absolute inset-0" />*/}
+            {/*            <div className="w-4 h-4 rounded-full bg-white relative shadow-[0_0_15px_rgba(255,255,255,0.8)] group-hover/marker:scale-125 transition-transform border-2 border-primary" />*/}
+            {/*            <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap bg-white text-slate-700 font-semibold text-xs px-3 py-1.5 rounded-lg shadow-lg">*/}
+            {/*                I think this island is awesome!*/}
+            {/*            </div>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</main>*/}
 
             {/* Sidebar: Vital Signs */}
             <aside className="w-full md:w-80 flex-shrink-0 flex flex-col border-l border-slate-200 glass-panel z-20 h-full shadow-xl bg-white/90">

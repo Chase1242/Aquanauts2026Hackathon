@@ -10,7 +10,5 @@
   </Project>
   <Project Path="OceanTown.Engine/OceanTown.Engine.csproj" Id="dfa247db-f190-4a00-a13d-70fa65aa268b" />
   <Project Path="OceanTown.Server/OceanTown.Server.csproj" />
-  <Project Path="OceanTown.Shared/OceanTown.Shared.csproj" Id="8e3cb92f-52fa-4a6f-beab-30fe6a317cad">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
+  <Project Path="OceanTown.Shared/OceanTown.Shared.csproj" Id="8e3cb92f-52fa-4a6f-beab-30fe6a317cad" />
 </Solution>
