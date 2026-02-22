@@ -1,9 +1,5 @@
-using OceanTown.Database.Services.Interfaces;
-using Xunit;
 using Moq;
-using System.Collections.Generic;
-using System.Threading;
-using OceanTown.Engine;
+using OceanTown.Database.Services.Interfaces;
 
 namespace OceanTown.Engine.Tests;
 
