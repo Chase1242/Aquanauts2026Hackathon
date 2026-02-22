@@ -2,7 +2,6 @@ import TitleScreen from "./TitleScreen";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Smile, Users, TreePine, Droplets, Calendar, Bot, CheckCircle2, XCircle } from 'lucide-react';
-import ISLAND_IMAGE from './assets/ocean.jpg';
 import IslandGame from "./IslandGame";
 import { scenarios } from './services/scenarioEngine';
 import { applyScenario } from './services/gameEngine';
@@ -10,6 +9,7 @@ import { DIALOGUE_SESSIONS, DialogueData } from './audioData';
 
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH"];
 const SCENARIOS_PER_MONTH = 3;
+
 export default function App() {
     const [gameStarted, setGameStarted] = useState(false);
     const [showButtons, setShowButtons] = useState(false);
@@ -35,15 +35,15 @@ export default function App() {
         setShowButtons(true);
     }, []);
 
-    // 1. Trigger the first alert when the game starts
+    // Trigger the first alert when the game starts
     useEffect(() => {
-        if (gameStarted) {
+        if (gameStarted && !isTransitioning) {
             const timer = setTimeout(() => {
                 setShowAlert(true);
-            }, 1000); // Delay to let the game screen fade in first
+            }, 1000);
             return () => clearTimeout(timer);
         }
-    }, [gameStarted]);
+    }, [gameStarted, isTransitioning]);
 
     // Sync dialogue data
     useEffect(() => {
@@ -60,11 +60,9 @@ export default function App() {
         setIsAnimationComplete(false);
         setShowButtons(false);
 
-        // Check if month ended (3 scenarios)
         if (nextCount >= SCENARIOS_PER_MONTH) {
             handleMonthEnd();
         } else {
-            // Next scenario in same month
             setScenarioCounter(nextCount);
             const currentIndex = scenarios.findIndex(s => s.id === currentScenario.id);
             setTimeout(() => {
@@ -77,20 +75,16 @@ export default function App() {
     const handleMonthEnd = () => {
         setTimeout(() => {
             if (monthIndex < MONTHS.length - 1) {
-                // Move to next month
                 setIsTransitioning(true);
-
                 setTimeout(() => {
                     setMonthIndex(prev => prev + 1);
                     setScenarioCounter(0);
-
                     const currentIndex = scenarios.findIndex(s => s.id === currentScenario.id);
                     setCurrentScenario(scenarios[currentIndex + 1]);
 
                     setTimeout(() => {
                         setIsTransitioning(false);
                         setTimeout(() => setShowAlert(true), 500);
-
                     }, 2000);
                 }, 500);
             } else {
@@ -102,26 +96,15 @@ export default function App() {
     return (
         <div className="w-full h-screen bg-slate-900 overflow-hidden selection:bg-cyan-500/30">
             <AnimatePresence mode="wait">
-                {/* 1. Title Screen */}
                 {!gameStarted && (
                     <motion.div key="title" exit={{ opacity: 0, filter: "blur(20px)" }} className="w-full h-full">
                         <TitleScreen onStartGame={() => setGameStarted(true)} />
                     </motion.div>
                 )}
 
-                {/* 2. Month Transition Overlay */}
                 {isTransitioning && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center"
-                    >
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            className="text-center"
-                        >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-center">
+                        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
                             <Calendar className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                             <h2 className="text-5xl font-black text-white tracking-[0.2em]">{MONTHS[monthIndex]}</h2>
                             <p className="text-cyan-400 mt-2 font-mono">PREPARING NEXT CYCLE...</p>
@@ -129,26 +112,66 @@ export default function App() {
                     </motion.div>
                 )}
 
-                {/* 3. Main Game Loop */}
                 {gameStarted && !gameEnded && (
-                    <motion.div key="game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative flex flex-col md:flex-row h-screen w-full bg-white">
+                    <motion.div key="game" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative flex flex-col md:flex-row h-screen w-full bg-white overflow-hidden">
                         <main className="relative flex-1 h-full overflow-hidden">
                             <IslandGame />
-                            {/* Simple Month Indicator */}
                             <div className="absolute top-6 left-6 bg-white/90 px-4 py-2 rounded-lg border border-slate-200 shadow-sm z-10">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Current Month</span>
                                 <p className="text-lg font-black text-primary">{MONTHS[monthIndex]}</p>
                             </div>
                         </main>
 
-                        <aside className="w-full md:w-80 border-l border-slate-200 glass-panel z-20 h-full bg-white/90">
-                            <div className="p-6 border-b border-slate-100 pt-8">
-                                <h3 className="text-xs font-bold tracking-widest text-slate-400 uppercase">Vital Signs</h3>
+                        {/* MERGED SIDEBAR FROM GROUPMATE */}
+                        <aside className="w-full md:w-80 flex-shrink-0 flex flex-col border-l border-slate-200 glass-panel z-20 h-full shadow-xl bg-white/90">
+                            <div className="p-6 border-b border-slate-100 pt-8 bg-white/50">
+                                <h3 className="text-xs font-bold tracking-widest text-slate-400 uppercase mb-1">Vital Signs</h3>
+                                <p className="text-sm text-slate-500">Eco-System Stability Monitor</p>
                             </div>
-                            <div className="p-6 space-y-6">
-                                <StatItem icon={<Smile />} label="Happiness" value={`${stats.happiness}%`} progress={stats.happiness} color="bg-emerald-500" textColor="text-emerald-600" />
-                                <StatItem icon={<Users />} label="Population" value={stats.population.toString()} progress={Math.min(stats.population / 10, 100)} color="bg-primary" textColor="text-primary" />
-                                <StatItem icon={<TreePine />} label="Ecosystem" value={`${stats.ecosystem}%`} progress={stats.ecosystem} color="bg-green-500" textColor="text-green-600" />
+
+                            <div className="relative flex-1 overflow-hidden group/scroll">
+                                <div className="h-full overflow-y-auto p-6 space-y-8 scroll-smooth scrollbar-hide">
+                                    <StatItem
+                                        icon={<Smile className="w-4 h-4" />}
+                                        label="Happiness"
+                                        value={`${stats.happiness}%`}
+                                        description="Citizens remain content, though recreational zones are limited."
+                                        progress={stats.happiness}
+                                        color="bg-emerald-500"
+                                        textColor="text-emerald-600"
+                                    />
+                                    <StatItem
+                                        icon={<Users className="w-4 h-4" />}
+                                        label="Population"
+                                        value={stats.population.toString()}
+                                        description="Steady growth. Housing capacity at 60%."
+                                        progress={Math.min((stats.population / 1000) * 100, 100)}
+                                        color="bg-primary"
+                                        textColor="text-primary"
+                                        delay={0.1}
+                                    />
+                                    <StatItem
+                                        icon={<TreePine className="w-4 h-4" />}
+                                        label="Ecosystem"
+                                        value={`${stats.ecosystem}%`}
+                                        description="Healthy CO2 absorption levels across all sectors."
+                                        progress={stats.ecosystem}
+                                        color="bg-green-500"
+                                        textColor="text-green-600"
+                                        delay={0.2}
+                                    />
+                                    <StatItem
+                                        icon={<Droplets className="w-4 h-4" />}
+                                        label="Water Purity"
+                                        value={`${stats.ecosystem}%`}
+                                        description="Desalination plants operating at peak efficiency."
+                                        progress={stats.ecosystem}
+                                        color="bg-blue-400"
+                                        textColor="text-blue-500"
+                                        delay={0.3}
+                                    />
+                                    <div className="h-12" />
+                                </div>
                             </div>
                         </aside>
 
@@ -194,7 +217,7 @@ export default function App() {
                     </motion.div>
                 )}
 
-                {/* 4. Game Over Screen */}
+                {/* Game Over Screen */}
                 {gameEnded && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-6">
                         <div className="max-w-md w-full text-center space-y-8">
@@ -214,16 +237,8 @@ export default function App() {
         </div>
     );
 }
-interface StatItemProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    description?: string;
-    progress: number;
-    color: string;
-    textColor: string;
-    delay?: number;
-}
+
+// ActionButton Helper
 function ActionButton({ onClick, label, icon, isPrimary }: any) {
     return (
         <motion.button
@@ -237,16 +252,44 @@ function ActionButton({ onClick, label, icon, isPrimary }: any) {
         </motion.button>
     );
 }
-function StatItem({ icon, label, value, progress, color, textColor }: any) {
+
+// MERGED STATITEM FROM GROUPMATE
+interface StatItemProps {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    description?: string;
+    progress: number;
+    color: string;
+    textColor: string;
+    delay?: number;
+}
+
+function StatItem({ icon, label, value, description, progress, color, textColor, delay = 0 }: StatItemProps) {
     return (
-        <div className="flex flex-col gap-2">
-            <div className="flex justify-between text-sm font-bold">
-                <span className={`flex items-center gap-2 ${textColor}`}>{icon} {label}</span>
-                <span className="font-mono">{value}</span>
+        <div className="flex flex-col gap-2 group">
+            <div className="flex justify-between items-end">
+                <div className="flex items-center gap-2 text-slate-600">
+                    <span className={`${textColor} flex items-center`}>{icon}</span>
+                    <span className="text-sm font-semibold">{label}</span>
+                </div>
+                <span className={`${textColor} font-mono font-bold bg-primary/10 px-1.5 py-0.5 rounded text-sm`}>
+                    {value}
+                </span>
             </div>
-            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className={`h-full ${color}`} />
+            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 1, delay, ease: 'easeOut' }}
+                    className={`h-full ${color} rounded-full shadow-[0_0_10px_rgba(0,191,165,0.3)]`}
+                />
             </div>
+            {description && (
+                <p className="text-xs text-slate-400 group-hover:text-primary transition-colors">
+                    {description}
+                </p>
+            )}
         </div>
     );
 }

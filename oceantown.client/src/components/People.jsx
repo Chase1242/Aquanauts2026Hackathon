@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const MAX_PEOPLE = 16;
 const ELLIPSE_X = 0.33;
@@ -18,8 +18,6 @@ function clamp(n, min, max) {
 function People({
     population,
     onAllGone,
-
-    // NEW:
     frozen = false,
     selectedCitizen = null,
     bubbleVisible = false,
@@ -27,41 +25,49 @@ function People({
 }) {
     const [hopPhase, setHopPhase] = useState(0);
 
+    // how many sprites should be visible
     const visibleCount = clamp(
-        Math.floor((population / 300) * MAX_PEOPLE),
+        Math.floor(((population ?? 0) / 300) * MAX_PEOPLE),
         0,
         MAX_PEOPLE
     );
 
-    const [people, setPeople] = useState(() =>
-        Array.from({ length: MAX_PEOPLE }).map((_, i) => {
-            const angle = Math.random() * Math.PI * 2;
-            const radius = Math.sqrt(Math.random());
+    // initialize people once (stable)
+    const initialPeople = useMemo(
+        () =>
+            Array.from({ length: MAX_PEOPLE }).map((_, i) => {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.sqrt(Math.random());
 
-            const x = CENTER + radius * Math.cos(angle) * 100 * ELLIPSE_X;
-            const y = CENTER + radius * Math.sin(angle) * 100 * ELLIPSE_Y;
+                const x = CENTER + radius * Math.cos(angle) * 100 * ELLIPSE_X;
+                const y = CENTER + radius * Math.sin(angle) * 100 * ELLIPSE_Y;
 
-            return {
-                id: i,
-                x,
-                y,
-                vx: (Math.random() - 0.5) * 0.15,
-                vy: (Math.random() - 0.5) * 0.15,
-                sprite: i % 2 === 0 ? "/person_left.png" : "/person_right.png",
-                exiting: false,
-                fade: 1
-            };
-        })
+                return {
+                    id: i,
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 0.15,
+                    vy: (Math.random() - 0.5) * 0.15,
+                    sprite: i % 2 === 0 ? "/person_left.png" : "/person_right.png",
+                    exiting: false,
+                    fade: 1
+                };
+            }),
+        []
     );
 
+    const [people, setPeople] = useState(initialPeople);
+
+    // animation loop
     useEffect(() => {
         let animationFrame;
 
         function update() {
-            setHopPhase(prev => prev + 0.08);
+            setHopPhase((prev) => prev + 0.08);
 
-            setPeople(prev =>
-                prev.map(p => {
+            setPeople((prev) =>
+                prev.map((p) => {
+                    // fade out if exiting
                     if (p.exiting) {
                         const newFade = Math.max(p.fade - 0.02, 0);
                         return { ...p, y: p.y - 0.3, fade: newFade };
@@ -74,7 +80,6 @@ function People({
 
                     const speedLimit = 0.18;
                     const speed = Math.sqrt(vx * vx + vy * vy);
-
                     if (speed > speedLimit) {
                         vx = (vx / speed) * speedLimit;
                         vy = (vy / speed) * speedLimit;
@@ -83,6 +88,7 @@ function People({
                     let nx = p.x + vx;
                     let ny = p.y + vy;
 
+                    // bounce back if outside island ellipse
                     if (!isInsideIsland(nx, ny)) {
                         vx *= -0.8;
                         vy *= -0.8;
@@ -101,27 +107,27 @@ function People({
         return () => cancelAnimationFrame(animationFrame);
     }, [frozen]);
 
+    // toggle exiting based on visibleCount
     useEffect(() => {
-        setPeople(prev =>
+        setPeople((prev) =>
             prev.map((p, index) => {
-                // should be visible
                 if (index < visibleCount) {
-                    if (p.exiting || p.fade < 1) {
-                        return { ...p, exiting: false, fade: 1 };
-                    }
+                    // should be visible
+                    if (p.exiting || p.fade < 1) return { ...p, exiting: false, fade: 1 };
                     return p;
                 }
 
-                // should be gone
+                // should leave
                 if (!p.exiting) return { ...p, exiting: true };
                 return p;
             })
         );
     }, [visibleCount]);
 
+    // callback when all are gone
     useEffect(() => {
         const everyoneGone =
-            visibleCount === 0 && people.every(p => p.exiting && p.fade <= 0);
+            visibleCount === 0 && people.every((p) => p.exiting && p.fade <= 0);
 
         if (everyoneGone && onAllGone) onAllGone();
     }, [people, visibleCount, onAllGone]);
@@ -135,7 +141,8 @@ function People({
                 if (!isVisible && !p.exiting) return null;
                 if (p.exiting && p.fade <= 0) return null;
 
-                const showBubble = false; //  disable bubble entirely
+                const showBubble = false; // keeping your bubble disabled
+
                 return (
                     <div
                         key={p.id}
@@ -144,12 +151,14 @@ function People({
                             left: `${p.x}%`,
                             top: `${p.y}%`,
                             transform: "translate(-50%, -50%)",
-                            zIndex: Math.floor(p.y * 10)
+                            zIndex: 1000 + Math.floor(p.y * 10), // ensure above island art
+                            pointerEvents: "none"
                         }}
                     >
                         <img
                             src={p.sprite}
                             className="person"
+                            alt=""
                             style={{
                                 width: "55px",
                                 opacity: p.exiting ? p.fade : 1,
@@ -174,7 +183,8 @@ function People({
                                     position: "absolute",
                                     left: "50%",
                                     top: "-18px",
-                                    transform: "translate(-50%, -50%)"
+                                    transform: "translate(-50%, -50%)",
+                                    pointerEvents: "auto"
                                 }}
                             >
                                 💬

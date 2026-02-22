@@ -43,12 +43,7 @@ function generatePositions(count) {
     return positions;
 }
 
-function Buildings({ ecosystem }) {
-    const [positions] = useState(() =>
-        generatePositions(MAX_BUILDINGS)
-    );
-
-    // Building count
+function Buildings({ ecosystem, positions = [] }) {
     const buildingCount = useMemo(() => {
         if (ecosystem > 70) return 4;
         if (ecosystem > 55) return 5;
@@ -61,15 +56,10 @@ function Buildings({ ecosystem }) {
     return (
         <>
             {positions.slice(0, buildingCount).map((pos, index) => {
-
-                // 🌱 Progressive urbanization
                 const urbanFactor = Math.max(0, (50 - ecosystem) / 50);
-                const isSkyscraper =
-                    Math.random() < urbanFactor;
+                const isSkyscraper = Math.random() < urbanFactor;
 
-                const src = isSkyscraper
-                    ? "/skyscraper.png"
-                    : "/house.png";
+                const src = isSkyscraper ? "/skyscraper.png" : "/house.png";
 
                 return (
                     <img
@@ -80,24 +70,18 @@ function Buildings({ ecosystem }) {
                             position: "absolute",
                             left: `${pos.left}%`,
                             top: `${pos.top}%`,
-
                             width: isSkyscraper ? "145px" : "90px",
-
-                            zIndex: Math.floor(pos.top * 10),
-
+                            zIndex: 150 + Math.floor(pos.top * 10),
                             transform: `
                 translate(-50%, -100%)
                 scale(${pos.scale})
                 ${isSkyscraper ? "scaleY(1.05)" : ""}
               `,
-
                             filter: `
                 drop-shadow(0px 6px 10px rgba(0,0,0,0.35))
                 brightness(${isSkyscraper ? 0.95 : 1})
               `,
-
                             opacity: 0.95,
-
                             transition: "all 0.8s ease"
                         }}
                     />
@@ -105,6 +89,7 @@ function Buildings({ ecosystem }) {
             })}
         </>
     );
+
 }
 
 export default Buildings;
