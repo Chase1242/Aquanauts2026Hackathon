@@ -12,6 +12,7 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
     const [simulation, setSimulation] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showAbout, setShowAbout] = useState(false);
 
     const handleStartGame = async () => {
         setLoading(true);
@@ -36,7 +37,7 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                 backgroundPosition: 'center'
             }}
         >
-            {/* Cinematic Overlay: Vignette and Blur */}
+            {/* Cinematic Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/40 to-transparent z-0" />
             <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.8)] z-0" />
 
@@ -92,7 +93,7 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                             <Waves className="w-12 h-12 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
                             <span className="text-cyan-400 font-bold tracking-[0.3em] text-sm uppercase">Civilization Sim</span>
                         </div>
-                        <h1 className="text-8xl font-black text-white leading-tight drop-shadow-2xl italic italic-none">
+                        <h1 className="text-8xl font-black text-white leading-tight drop-shadow-2xl italic">
                             OCEAN<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500">TOWN</span>
                         </h1>
@@ -102,15 +103,19 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                     <div className="flex flex-col gap-4 w-full max-w-sm">
                         <MenuButton
                             icon={<Play className="w-5 h-5 fill-current" />}
-                            label={loading ? "Loading..." : "Start Game"}
+                            label="Start Game"
                             primary
-                            onClick={loading ? undefined : handleStartGame}
+                            onClick={onStartGame}
                         />
-                        {error && <div className="text-red-400 text-xs mt-2">{error}</div>}
-                        {/* Renamed Achievements to Load Game */}
-                        <MenuButton icon={<FolderOpen className="w-5 h-5" />} label="Load Game" />
-                        <MenuButton icon={<Settings className="w-5 h-5" />} label="Settings" />
-                        <MenuButton icon={<HelpCircle className="w-5 h-5" />} label="How to Play" />
+
+                        {/* Removed Load Game Button */}
+
+                        <MenuButton
+                            icon={<Info className="w-5 h-5" />}
+                            label="About and How to Play"
+                            isActive={showAbout} // New prop to show it's selected
+                            onClick={() => setShowAbout(!showAbout)}
+                        />
                     </div>
 
                     {/* Version & Credits */}
@@ -121,27 +126,33 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                     </div>
                 </div>
 
-                {/* Right Side: Feature Teasers with hover descriptions */}
+                {/* Right Side: Feature Teasers */}
                 <div className="hidden md:flex col-span-7 items-center justify-end">
                     <div className="flex flex-col gap-6 w-full max-w-md">
-                        <FeatureTag
-                            icon={<Leaf />}
-                            text="Flora Management"
-                            description="Cultivate and maintain diverse underwater ecosystems to sustain marine life."
-                            delay={0.7}
-                        />
-                        <FeatureTag
-                            icon={<Users />}
-                            text="Population Growth"
-                            description="Oversee the expansion of your colony and manage citizen happiness and resource needs."
-                            delay={0.9}
-                        />
-                        <FeatureTag
-                            icon={<Zap />}
-                            text="Neural AI Logic"
-                            description="Advanced autonomous agents that respond dynamically to environmental and social changes."
-                            delay={1.1}
-                        />
+                        <AnimatePresence>
+                            {showAbout && (
+                                <>
+                                    <FeatureTag
+                                        icon={<Leaf />}
+                                        text="Flora Management"
+                                        description="Cultivate and maintain diverse underwater ecosystems to sustain marine life."
+                                        delay={0.1}
+                                    />
+                                    <FeatureTag
+                                        icon={<Users />}
+                                        text="Population Growth"
+                                        description="Oversee the expansion of your colony and manage citizen happiness and resource needs."
+                                        delay={0.2}
+                                    />
+                                    <FeatureTag
+                                        icon={<Zap />}
+                                        text="Neural AI Logic"
+                                        description="Advanced autonomous agents that respond dynamically to environmental and social changes."
+                                        delay={0.3}
+                                    />
+                                </>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>
@@ -149,7 +160,29 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
     );
 }
 
-// Updated Feature Tag with Hover Description
+function MenuButton({ icon, label, primary = false, isActive = false, onClick }: any) {
+    return (
+        <motion.button
+            whileHover={{ x: 10 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onClick}
+            className={`
+                flex items-center gap-4 px-6 py-4 rounded-xl font-bold transition-all duration-300 group
+                ${primary
+                    ? 'bg-cyan-500 text-slate-900 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-cyan-400'
+                    : isActive
+                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                        : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-cyan-500/50'}
+            `}
+        >
+            <span className={(primary || isActive) ? 'text-cyan-400' : 'text-cyan-400 group-hover:scale-110 transition-transform'}>
+                {icon}
+            </span>
+            <span className="uppercase tracking-widest text-sm">{label}</span>
+        </motion.button>
+    );
+}
+
 function FeatureTag({ icon, text, description, delay }: { icon: React.ReactNode, text: string, description: string, delay: number }) {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -157,6 +190,7 @@ function FeatureTag({ icon, text, description, delay }: { icon: React.ReactNode,
         <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
             transition={{ delay }}
@@ -184,26 +218,5 @@ function FeatureTag({ icon, text, description, delay }: { icon: React.ReactNode,
                 )}
             </AnimatePresence>
         </motion.div>
-    );
-}
-
-function MenuButton({ icon, label, primary = false, onClick }: { icon: React.ReactNode, label: string, primary?: boolean, onClick?: () => void }) {
-    return (
-        <motion.button
-            whileHover={{ x: 10 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onClick}
-            className={`
-                flex items-center gap-4 px-6 py-4 rounded-xl font-bold transition-all duration-300 group
-                ${primary
-                    ? 'bg-cyan-500 text-slate-900 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-cyan-400'
-                    : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-cyan-500/50'}
-            `}
-        >
-            <span className={primary ? 'text-slate-900' : 'text-cyan-400 group-hover:scale-110 transition-transform'}>
-                {icon}
-            </span>
-            <span className="uppercase tracking-widest text-sm">{label}</span>
-        </motion.button>
     );
 }
