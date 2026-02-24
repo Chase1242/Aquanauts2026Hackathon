@@ -52,4 +52,38 @@ public class VariableDefinitionRepository : IVariableDefinitionRepository
             .Select(v => new VariableDef(v.VariableDefinitionId, v.Code))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<VariableDefinition>> QueryAsync(VariableDefinition filter)
+    {
+        var query = this._context.VariableDefinitions.AsQueryable();
+
+        if (filter.VariableDefinitionId != 0)
+            query = query.Where(v => v.VariableDefinitionId == filter.VariableDefinitionId);
+        if (!string.IsNullOrEmpty(filter.Code))
+            query = query.Where(v => v.Code == filter.Code);
+        if (!string.IsNullOrEmpty(filter.DisplayName))
+            query = query.Where(v => v.DisplayName == filter.DisplayName);
+        if (!string.IsNullOrEmpty(filter.Description))
+            query = query.Where(v => v.Description == filter.Description);
+        if (!string.IsNullOrEmpty(filter.Unit))
+            query = query.Where(v => v.Unit == filter.Unit);
+        if (!string.IsNullOrEmpty(filter.Category))
+            query = query.Where(v => v.Category == filter.Category);
+        if (filter.SimulationProjectId.HasValue)
+            query = query.Where(v => v.SimulationProjectId == filter.SimulationProjectId);
+        if (filter.CreatedAt != default)
+            query = query.Where(v => v.CreatedAt == filter.CreatedAt);
+        if (filter.UpdatedAt.HasValue)
+            query = query.Where(v => v.UpdatedAt == filter.UpdatedAt);
+        if (filter.MinValue.HasValue)
+            query = query.Where(v => v.MinValue == filter.MinValue);
+        if (filter.MaxValue.HasValue)
+            query = query.Where(v => v.MaxValue == filter.MaxValue);
+        if (filter.DeltaMax.HasValue)
+            query = query.Where(v => v.DeltaMax == filter.DeltaMax);
+
+        // Note: Not filtering on navigation properties/collections
+
+        return await query.ToListAsync();
+    }
 }

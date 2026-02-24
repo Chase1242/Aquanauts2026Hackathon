@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OceanTown.Database.Entities;
 using OceanTown.Database.Services.Interfaces;
-using OceanTown.Engine;
 using OceanTown.Engine.Interfaces;
 using OceanTown.Shared;
 using static OceanTown.Engine.Aggregator;
@@ -16,17 +16,20 @@ public sealed class SimulationController : ControllerBase
     private readonly ISimulationEngine _engine;
     private readonly IGameSaveRepository _gameSaveRepository;
     private readonly IUserAccountRepository _userAccountRepository;
+    private readonly IVariableDefinitionRepository _variableDefinitionRepository;
 
     public SimulationController(
         ISimulationLoader loader,
         ISimulationEngine engine,
         IGameSaveRepository gameSaveRepository,
-        IUserAccountRepository userAccountRepository)
+        IUserAccountRepository userAccountRepository,
+        IVariableDefinitionRepository variableDefinitionRepository)
     {
         this._loader = loader;
         this._engine = engine;
         this._gameSaveRepository = gameSaveRepository;
         this._userAccountRepository = userAccountRepository;
+        this._variableDefinitionRepository = variableDefinitionRepository;
     }
 
     /// <summary>
@@ -47,15 +50,15 @@ public sealed class SimulationController : ControllerBase
     [ProducesResponseType(typeof(LoadResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> LoadSimulation(int projectId, string username, CancellationToken ct)
     {
-        var simulation = await this._loader.LoadAsync(projectId, ct);
-        var game = await this._gameSaveRepository.GetByUsernameAsync(username);
+        //var simulation = await this._loader.LoadAsync(projectId, ct);
+        var game = await this._gameSaveRepository.GetByUsernameAsync(username, projectId);
         var state = game!.ToGameState();
-        Aggregator.Apply(state.Cells, state.GlobalVariables, new List<AggregationRule>
-            {
-                new("TotForest", AggregateOp.Sum, "A"),
-                new("AvgForest", AggregateOp.Avg, "A"),
-                new("OilTot", AggregateOp.Sum, "OilCell"),
-            });
+        //Aggregator.Apply(state.Cells, state.GlobalVariables, new List<AggregationRule>
+        //    {
+        //        new("TotForest", AggregateOp.Sum, "A"),
+        //        new("AvgForest", AggregateOp.Avg, "A"),
+        //        new("OilTot", AggregateOp.Sum, "OilCell"),
+        //    });
         return Ok(new LoadResponse { State = state });
     }
 
@@ -73,6 +76,26 @@ public sealed class SimulationController : ControllerBase
         var simulation = await this._loader.LoadAsync(projectId, ct);
         var plan = simulation.Plan;
 
+        var prevSave = await this._gameSaveRepository.GetByUsernameAsync(userId.ToString(), projectId);
+        var loadedState = prevSave?.ToGameState();
+        var variables = await this._variableDefinitionRepository
+            .QueryAsync(new VariableDefinition
+            {
+                SimulationProjectId = projectId
+
+            });
+
+        var mappedDict = loadedState?.GlobalVariables
+            .ToDictionary(gv => gv.Key, gv =>
+            {
+                var variableDef = variables.FirstOrDefault(v => v.Code == gv.Key);
+                double val = gv.Value;
+                return (val, variableDef?.MinValue ?? 0, variableDef?.MaxValue ?? 1, variableDef?.MaxValue ?? 0.05);
+            });
+
+        var deltaAppliedState = mappedDict?.ApplyDeltas(request.State.GlobalVariables);
+
+        request.State.GlobalVariables = deltaAppliedState ?? request.State.GlobalVariables;
         var nextState = this._engine.StepYear(
             request.State,
             simulation,

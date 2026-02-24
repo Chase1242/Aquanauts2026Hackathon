@@ -1,4 +1,5 @@
-﻿using OceanTown.Database.Entities;
+﻿using Newtonsoft.Json;
+using OceanTown.Database.Entities;
 using OceanTown.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -54,7 +55,8 @@ public static class Extensions
         JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            NumberHandling = JsonNumberHandling.AllowReadingFromString
+            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            PropertyNameCaseInsensitive = true,
         };
 
         ArgumentNullException.ThrowIfNull(save);
@@ -62,13 +64,13 @@ public static class Extensions
         if (string.IsNullOrWhiteSpace(save.GameStateJson))
             throw new InvalidOperationException("Save has no GameStateJson.");
 
-        var state = JsonSerializer.Deserialize<GameState>(save.GameStateJson, JsonOptions);
+        var state = JsonConvert.DeserializeObject<GameState>(save.GameStateJson.Trim());
 
         if (state == null)
             throw new InvalidOperationException("GameStateJson could not be deserialized.");
 
         // Safety defaults in case older saves are missing fields
-        state.Cells ??= new List<Dictionary<string, double>>();
+        //state.Cells ??= new List<Dictionary<string, double>>();
         state.GlobalVariables ??= new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
         return state;
@@ -94,7 +96,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(save);
         ArgumentNullException.ThrowIfNull(state);
 
-        var json = JsonSerializer.Serialize(state, JsonOptions);
+        var json = System.Text.Json.JsonSerializer.Serialize(state, JsonOptions);
 
         save.GameStateJson = json;
 
@@ -114,7 +116,7 @@ public static class Extensions
     {
         if (state == null) throw new ArgumentNullException(nameof(state));
 
-        var json = JsonSerializer.Serialize(state, JsonOptions);
+        var json = System.Text.Json.JsonSerializer.Serialize(state, JsonOptions);
 
         return new GameSave
         {
@@ -127,4 +129,33 @@ public static class Extensions
         };
     }
 
+    private static double Clamp(this double value, double min, double max)
+    {
+        return Math.Max(min, Math.Min(max, value));
+    }
+
+    public static Dictionary<string, double> ApplyDeltas(
+        this Dictionary<string, (double, double, double, double)> baseConstants,
+        Dictionary<string, double> deltas)
+    {
+        ArgumentNullException.ThrowIfNull(baseConstants);
+        var result = new Dictionary<string, double>(baseConstants.ToDictionary(b => b.Key, b => b.Value.Item1));
+
+        foreach (var delta in deltas)
+        {
+            if (!result.ContainsKey(delta.Key))
+                continue; // ignore invalid keys
+
+            var clampedDelta = delta.Value.Clamp(-baseConstants[delta.Key].Item4, baseConstants[delta.Key].Item4);
+
+            result[delta.Key] += clampedDelta;
+
+            if (baseConstants.TryGetValue(delta.Key, out var range))
+            {
+                result[delta.Key] = result[delta.Key].Clamp(range.Item2, range.Item3);
+            }
+        }
+
+        return result;
+    }
 }

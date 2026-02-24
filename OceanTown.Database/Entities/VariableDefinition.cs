@@ -20,6 +20,12 @@ public partial class VariableDefinition
 
     public DateTime? UpdatedAt { get; set; }
 
+    public double? MinValue { get; set; }
+
+    public double? MaxValue { get; set; }
+
+    public double? DeltaMax { get; set; }
+
     public virtual ICollection<FunctionDefinition> FunctionDefinitions { get; set; } = new List<FunctionDefinition>();
 
     public virtual ICollection<FunctionParameter> FunctionParameters { get; set; } = new List<FunctionParameter>();

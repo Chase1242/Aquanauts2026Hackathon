@@ -12,6 +12,7 @@ import { DIALOGUE_SESSIONS, DialogueData } from './audioData';
 import VILLAGER_1 from './assets/villager1.png';
 import VILLAGER_2 from './assets/villager2.png';
 import VILLAGER_3 from './assets/villager3.png';
+import SimulationInput from "./SimulationInput";
 
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH"];
 const SCENARIOS_PER_MONTH = 3;
@@ -21,6 +22,7 @@ export default function App() {
     const [showAlert, setShowAlert] = useState(false);
     const [dialogue, setDialogueData] = useState<DialogueData | null>(null);
     const [isAnimationComplete, setIsAnimationComplete] = useState(false);
+    const [isTestingApi, setIsTestingApi] = useState(false);
 
     // Monthly Progression State
     const [monthIndex, setMonthIndex] = useState(0);
@@ -258,6 +260,8 @@ export default function App() {
         setInitialStats(startStats);
     };
 
+    const handleTestApi = () => { setIsTestingApi(true); console.log(isTestingApi); }; 
+
     const [stats, setStats] = useState({
         happiness: 70,
         population:420,
@@ -296,10 +300,16 @@ export default function App() {
     return (
         <div className="w-full h-screen bg-slate-900 overflow-hidden selection:bg-cyan-500/30">
             <AnimatePresence mode="wait">
+
+                {/*API Test stuff*/}
+                {!gameStarted && isTestingApi && (
+                    <SimulationInput onBack={() => setIsTestingApi(false)} />
+                )}
+
                 {/* 1. Title Screen */}
                 {!gameStarted && (
                     <motion.div key="title" exit={{ opacity: 0, filter: "blur(20px)" }} className="w-full h-full">
-                        <TitleScreen onStartGame={handleStartGame} />
+                        <TitleScreen onStartGame={handleStartGame} onTestApi={handleTestApi} />
                     </motion.div>
                 )}
 

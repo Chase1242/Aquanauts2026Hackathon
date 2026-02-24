@@ -6,27 +6,14 @@ import MAIN_MENU_BG from './assets/MainMenuBG.jpg';
 
 interface TitleScreenProps {
     onStartGame: (simState: any) => void;
+    onTestApi: () => void;
 }
 
-export default function TitleScreen({ onStartGame }: TitleScreenProps) {
+export default function TitleScreen({ onStartGame, onTestApi }: TitleScreenProps) {
     const [simulation, setSimulation] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showAbout, setShowAbout] = useState(false);
-
-    const handleStartGame = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const sim = await getSimulationForUser(2, 'chase.conaway');
-            setSimulation(sim);
-            onStartGame(sim);
-        } catch (e: any) {
-            setError('Failed to load simulation.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div
@@ -114,6 +101,12 @@ export default function TitleScreen({ onStartGame }: TitleScreenProps) {
                             label="About and How to Play"
                             isActive={showAbout} // New prop to show it's selected
                             onClick={() => setShowAbout(!showAbout)}
+                        />
+
+                        <MenuButton
+                            icon={<Info className="w-5 h-5" />}
+                            label="Test API" // New prop to show it's selected
+                            onClick={onTestApi}
                         />
                     </div>
 

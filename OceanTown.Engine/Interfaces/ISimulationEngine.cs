@@ -5,6 +5,6 @@ namespace OceanTown.Engine.Interfaces;
 
 public interface ISimulationEngine
 {
-    GameState StepYear(GameState current, Simulation def, ExecutionPlan plan,
+    GameState StepYear(GameState deltas, Simulation def, ExecutionPlan plan,
         IList<AggregationRule> rules, bool snapshot = true);
 }

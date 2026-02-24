@@ -10,6 +10,8 @@ public partial class SimulationProject
 
     public DateTime CreatedAt { get; set; }
 
+    public string? StartState { get; set; }
+
     public virtual ICollection<FunctionDefinition> FunctionDefinitions { get; set; } = new List<FunctionDefinition>();
 
     public virtual ICollection<GameSave> GameSaves { get; set; } = new List<GameSave>();

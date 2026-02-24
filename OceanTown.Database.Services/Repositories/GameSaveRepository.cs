@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OceanTown.Database.Entities;
 using OceanTown.Database.Services.Interfaces;
-using OceanTown.Shared;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,7 +22,7 @@ public class GameSaveRepository : IGameSaveRepository
         return await this._context.GameSaves.FindAsync(id);
     }
 
-    public async Task<GameSave?> GetByUsernameAsync(string username)
+    public async Task<GameSave?> GetByUsernameAsync(string username, int projId)
     {
         var user = await this._context.UserAccounts
             .FirstOrDefaultAsync(gs => gs.Username == username);
@@ -45,17 +44,13 @@ public class GameSaveRepository : IGameSaveRepository
 
         if (save is null)
         {
+            SimulationProject sim = await this._context.SimulationProjects.FirstOrDefaultAsync(s => s.SimulationProjectId == projId)
+                ?? throw new Exception("No simulation projects found in the database.");
+
             save = CreateDefaultGameSaveState(
                 userAccountId: user.UserAccountId, // will be updated when user is created
-                simulationProjectId: 2, // can be updated later when user starts a simulation
-                saveName: "Default Save",
-                cellCount: 100,
-                initialForestAreaPerCell: 1.0,
-                defaultDeforestationRate: 0.01,
-                initialPopulation: 1000,
-                initialOceanQ: 1.0,
-                initialAirQ: 1.0,
-                populationGrowthRate: 0.02
+                sim: sim, // can be updated later when user starts a simulation
+                saveName: "Default Save"
             );
 
             await AddAsync(save);
@@ -102,16 +97,8 @@ public class GameSaveRepository : IGameSaveRepository
 
     public static GameSave CreateDefaultGameSaveState(
         int userAccountId,
-        int simulationProjectId,
+        SimulationProject sim,
         string saveName,
-        int cellCount,
-        double initialForestAreaPerCell,
-        double defaultDeforestationRate,
-        double initialPopulation,
-        double initialOceanQ = 1.0,
-        double initialAirQ = 1.0,
-        double initialH = 1.0,
-        double? populationGrowthRate = null,
         string? engineVersion = null)
     {
         JsonSerializerOptions jsonOptions = new()
@@ -120,44 +107,19 @@ public class GameSaveRepository : IGameSaveRepository
             WriteIndented = false,
             NumberHandling = JsonNumberHandling.Strict
         };
+
         // Build default runtime state
-        var state = new GameState
-        {
-            Year = 0,
-            Cells = new List<Dictionary<string, double>>(capacity: cellCount),
-            GlobalVariables = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["P"] = initialPopulation,
-                ["OceanQ"] = initialOceanQ,
-                ["AirQ"] = initialAirQ,
-                ["H"] = initialH,
-            }
-        };
+        var state = sim.StartState;
 
-        // Optional globals used by some functions
-        if (populationGrowthRate.HasValue)
-            state.GlobalVariables["rP"] = populationGrowthRate.Value;
-
-        // Create N land cells
-        for (int i = 0; i < cellCount; i++)
-        {
-            state.Cells.Add(new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["A"] = initialForestAreaPerCell,       // forest area
-                ["d"] = defaultDeforestationRate,       // deforestation rate (frontend can override)
-                ["OilCell"] = 0.0                       // derived later by functions
-            });
-        }
-
-        var json = JsonSerializer.Serialize(state, jsonOptions);
+        //var json = JsonSerializer.Serialize(state, jsonOptions);
 
         // Create DB entity
         return new GameSave
         {
             UserAccountId = userAccountId,
-            SimulationProjectId = simulationProjectId,
+            SimulationProjectId = sim.SimulationProjectId,
             SaveName = saveName,
-            GameStateJson = json,
+            GameStateJson = sim.StartState ?? string.Empty,
             IsDeleted = false,
             DeletedAt = null,
             CreatedAt = DateTime.UtcNow,

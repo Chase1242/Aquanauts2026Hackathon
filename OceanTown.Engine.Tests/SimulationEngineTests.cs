@@ -1,7 +1,5 @@
-using OceanTown.Engine;
 using OceanTown.Shared;
-using Xunit;
-using System.Collections.Generic;
+using static OceanTown.Engine.Aggregator;
 
 namespace OceanTown.Engine.Tests;
 
@@ -14,20 +12,14 @@ public class SimulationEngineTests
         var gameState = new GameState
         {
             Year = 0,
-            Cells = new List<Dictionary<string, double>>
-            {
-                new() { { "Deforestation", 10 }, { "ForestCover", 50 }, { "Pollution", 5 } },
-                new() { { "Deforestation", 20 }, { "ForestCover", 60 }, { "Pollution", 10 } }
-            },
             GlobalVariables = new Dictionary<string, double> { { "Deforestation", 30 }, { "ForestCover", 55 }, { "Pollution", 15 } }
         };
         var simulation = new Simulation(1, new Dictionary<int, Variable>(), new Dictionary<string, Variable>(), new List<Function>());
         var plan = new ExecutionPlan(new List<Function>());
 
-        var next = engine.StepYear(gameState, simulation, plan);
+        var next = engine.StepYear(gameState, simulation, plan, new List<AggregationRule>());
 
         Assert.Equal(1, next.Year);
-        Assert.Equal(2, next.Cells.Count);
         Assert.True(next.GlobalVariables.ContainsKey("TotalDeforestation"));
         Assert.True(next.GlobalVariables.ContainsKey("AvgForestCover"));
         Assert.True(next.GlobalVariables.ContainsKey("TotalPollution"));
