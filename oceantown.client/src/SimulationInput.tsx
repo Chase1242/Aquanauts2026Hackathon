@@ -1,5 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { stepSimulation } from './oceanTownApi';
+import { param } from 'framer-motion/client';
 
 interface SimulationInputProps {
     onBack?: () => void;
@@ -57,6 +58,7 @@ export default function SimulationInput({ onBack, onResult }: SimulationInputPro
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    const [state, setState] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,19 +82,26 @@ export default function SimulationInput({ onBack, onResult }: SimulationInputPro
                 d2: d2,
                 d3: d3
             };
+            console.log(paramValues);
             const stepRequest = {
                 State: {
-                    Year: 0,
+                    Year: !state ? 0 : state.Year,
                     globalVariables: {
                         ...paramValues
                     },
                 },
                 Snapshot: true,
             };
+            //console.log(state);
             // Use projectId=2, userId=1 for demo
             const res = await stepSimulation(2, 1, stepRequest);
+            console.log(res.nextState);
+
+            setState(res.nextState);
             setResult(res);
             if (onResult) onResult(res);
+
+            console.log(state);
         } catch (e: any) {
             setError(e.message || 'Error calling simulation endpoint');
         } finally {

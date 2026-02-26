@@ -22,22 +22,38 @@ public class GameSaveRepository : IGameSaveRepository
         return await this._context.GameSaves.FindAsync(id);
     }
 
+    public async Task<GameSave?> GetByUsernameAsync(int userId, int projId)
+    {
+        var user = await this._userAccountRepository.GetByIdAsync(userId);
+        if (user is null)
+            return null;
+
+        return await GetByUsernameAsync(user, projId);
+    }
+
     public async Task<GameSave?> GetByUsernameAsync(string username, int projId)
     {
         var user = await this._context.UserAccounts
             .FirstOrDefaultAsync(gs => gs.Username == username);
-
         if (user is null)
-        {
-            var newUser = await this._userAccountRepository.AddAsync(new UserAccount
-            {
-                Username = username,
-                CreatedAt = DateTime.UtcNow,
-            });
+            return null;
 
-            username = newUser.Username;
-            user = newUser;
-        }
+        return await GetByUsernameAsync(user, projId);
+    }
+
+    public async Task<GameSave?> GetByUsernameAsync(UserAccount user, int projId)
+    {
+        //if (user is null)
+        //{
+        //    var newUser = await this._userAccountRepository.AddAsync(new UserAccount
+        //    {
+        //        Username = user.Username,
+        //        CreatedAt = DateTime.UtcNow,
+        //    });
+
+        //    user.Username = newUser.Username;
+        //    user = newUser;
+        //}
 
         var save = await this._context.GameSaves
             .FirstOrDefaultAsync(gs => gs.UserAccountId == user.UserAccountId && !gs.IsDeleted);

@@ -76,7 +76,7 @@ public sealed class SimulationController : ControllerBase
         var simulation = await this._loader.LoadAsync(projectId, ct);
         var plan = simulation.Plan;
 
-        var prevSave = await this._gameSaveRepository.GetByUsernameAsync(userId.ToString(), projectId);
+        var prevSave = await this._gameSaveRepository.GetByUsernameAsync(userId, projectId);
         var loadedState = prevSave?.ToGameState();
         var variables = await this._variableDefinitionRepository
             .QueryAsync(new VariableDefinition
@@ -85,17 +85,16 @@ public sealed class SimulationController : ControllerBase
 
             });
 
-        var mappedDict = loadedState?.GlobalVariables
-            .ToDictionary(gv => gv.Key, gv =>
-            {
-                var variableDef = variables.FirstOrDefault(v => v.Code == gv.Key);
-                double val = gv.Value;
-                return (val, variableDef?.MinValue ?? 0, variableDef?.MaxValue ?? 1, variableDef?.MaxValue ?? 0.05);
-            });
 
-        var deltaAppliedState = mappedDict?.ApplyDeltas(request.State.GlobalVariables);
+
+        var mappedDict = loadedState?.GlobalVariables
+            .ToDictionary(gv => gv.Key,
+            gv => variables.Where(hv => hv.Code == gv.Key).Select(v => (gv.Value, v.MinValue, v.MaxValue, v.DeltaMax)).First());
+
+        var deltaAppliedState = mappedDict?.ApplyDeltas(request.State.GlobalVariables.Where(d => !variables.Where(v => v.Category == "State").Select(v => v.Code).ToList().Contains(d.Key)).ToDictionary());
 
         request.State.GlobalVariables = deltaAppliedState ?? request.State.GlobalVariables;
+        request.State.Year = loadedState?.Year ?? 0;
         var nextState = this._engine.StepYear(
             request.State,
             simulation,

@@ -6,6 +6,7 @@ public interface IGameSaveRepository
 {
     Task<GameSave?> GetByIdAsync(int id);
     Task<GameSave?> GetByUsernameAsync(string username, int projId);
+    Task<GameSave?> GetByUsernameAsync(int userId, int projId);
     Task<IEnumerable<GameSave>> GetAllAsync();
     Task AddAsync(GameSave entity);
     Task UpdateAsync(GameSave entity);

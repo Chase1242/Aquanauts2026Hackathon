@@ -135,24 +135,24 @@ public static class Extensions
     }
 
     public static Dictionary<string, double> ApplyDeltas(
-        this Dictionary<string, (double, double, double, double)> baseConstants,
+        this Dictionary<string, (double Value, double? MinValue, double? MaxValue, double? DeltaMax)> baseConstants,
         Dictionary<string, double> deltas)
     {
         ArgumentNullException.ThrowIfNull(baseConstants);
-        var result = new Dictionary<string, double>(baseConstants.ToDictionary(b => b.Key, b => b.Value.Item1));
+        var result = new Dictionary<string, double>(baseConstants.ToDictionary(b => b.Key, b => b.Value.Value));
 
         foreach (var delta in deltas)
         {
             if (!result.ContainsKey(delta.Key))
                 continue; // ignore invalid keys
 
-            var clampedDelta = delta.Value.Clamp(-baseConstants[delta.Key].Item4, baseConstants[delta.Key].Item4);
+            var clampedDelta = delta.Value.Clamp(-baseConstants[delta.Key].DeltaMax ?? 0, baseConstants[delta.Key].DeltaMax ?? 0);
 
-            result[delta.Key] += clampedDelta;
-
+            var d = result[delta.Key] + clampedDelta;
+            result[delta.Key] = d;
             if (baseConstants.TryGetValue(delta.Key, out var range))
             {
-                result[delta.Key] = result[delta.Key].Clamp(range.Item2, range.Item3);
+                result[delta.Key] = result[delta.Key].Clamp(range.MinValue ?? 0, range.MaxValue ?? 0);
             }
         }
 
